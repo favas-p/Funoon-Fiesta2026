@@ -10,8 +10,8 @@ export function HomeEngagementSection() {
         <section className="relative py-16 md:py-24 overflow-hidden bg-zinc-950">
             {/* Dynamic Background */}
             <div className="absolute inset-0 z-0">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#8B4513]/20 blur-[120px] rounded-full opacity-60" />
-                <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-amber-600/10 blur-[100px] rounded-full opacity-40" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#70B040]/20 blur-[120px] rounded-full opacity-60" />
+                <div className="absolute bottom-0 right-0 w-[600px] h-[400px] bg-[#F09030]/15 blur-[100px] rounded-full opacity-40" />
                 <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             </div>
 
@@ -26,11 +26,11 @@ export function HomeEngagementSection() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.6 }}
                         >
-                            <span className="inline-block py-1 px-3 rounded-full bg-[#8B4513]/20 text-[#8B4513] border border-[#8B4513]/30 text-sm font-bold tracking-wider mb-4">
+                            <span className="inline-block py-1 px-3.5 rounded-full bg-[#70B040]/20 text-[#70B040] border border-[#70B040]/30 text-sm font-bold tracking-wider mb-4">
                                 LIVE INTERACTION
                             </span>
                             <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight mb-4">
-                                VOICE YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600">OPINION</span>
+                                VOICE YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FDE047] via-[#F09030] to-[#70B040]">OPINION</span>
                             </h2>
                             <p className="text-lg text-zinc-400 max-w-xl mx-auto lg:mx-0 leading-relaxed">
                                 Join the excitement! Cast your votes in live polls and predict the winners to climb the global leaderboard. The stage is yours.
@@ -46,11 +46,11 @@ export function HomeEngagementSection() {
                         >
                             {/* Stat Badges (Mock Visuals) */}
                             <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-sm">
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                 <span className="text-zinc-300 font-mono text-sm">Active Polls Live</span>
                             </div>
                             <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2 rounded-xl backdrop-blur-sm">
-                                <Zap className="w-4 h-4 text-amber-500" />
+                                <Zap className="w-4 h-4 text-[#FDE047]" />
                                 <span className="text-zinc-300 font-mono text-sm">High Engagement</span>
                             </div>
                         </motion.div>
@@ -64,12 +64,12 @@ export function HomeEngagementSection() {
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.5, delay: 0.3 }}
-                            className="group relative bg-zinc-900 border border-zinc-800 hover:border-[#8B4513]/50 rounded-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-[#8B4513]/10 hover:-translate-y-1"
+                            className="group relative bg-zinc-900 border border-zinc-800 hover:border-[#70B040]/50 rounded-3xl p-6 transition-all duration-300 hover:shadow-2xl hover:shadow-[#70B040]/10 hover:-translate-y-1"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#8B4513]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#70B040]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
 
                             <div className="relative z-10 flex flex-col h-full items-start">
-                                <div className="p-3 bg-zinc-800 rounded-2xl mb-4 group-hover:bg-[#8B4513] transition-colors duration-300">
+                                <div className="p-3 bg-zinc-800 rounded-2xl mb-4 group-hover:bg-[#70B040] transition-colors duration-300">
                                     <BarChart2 className="w-8 h-8 text-white" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-white mb-2">Live Polls</h3>
@@ -103,7 +103,7 @@ export function HomeEngagementSection() {
                                     Guess the winners of upcoming events. Top the leaderboard and earn bragging rights.
                                 </p>
                                 <Link href="/predictions" className="w-full">
-                                    <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white border-0 hover:opacity-90 font-bold rounded-xl group-hover:scale-[1.02] transition-transform">
+                                    <Button className="w-full bg-gradient-to-r from-[#70B040] to-[#F09030] text-white border-0 hover:opacity-90 font-bold rounded-xl group-hover:scale-[1.02] transition-transform">
                                         Predict Now <Trophy className="w-4 h-4 ml-2" />
                                     </Button>
                                 </Link>

@@ -20,9 +20,9 @@ export function PublicPageWrapper({ children }: PublicPageWrapperProps) {
 
   if (isPublicPage) {
     return (
-      <div className="min-h-screen bg-[#fffcf5] relative">
+      <div className="min-h-screen bg-[#FAF9F6] relative">
         <VerticalNavSidebar />
-        <div className="fixed top-4 md:top-8 right-4 md:right-8 z-50">
+        <div className="fixed top-5 md:top-7 right-4 md:right-6 z-50 flex items-center">
           <NotificationProvider />
         </div>
         {children}

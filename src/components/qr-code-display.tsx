@@ -83,14 +83,20 @@ export function QRCodeDisplay({ chestNumber, participantName }: QRCodeDisplayPro
           )}
         </div>
         <div className="flex flex-col items-center gap-4">
-          <div className="bg-white p-4 rounded-lg">
-            <Image
-              src={qrCode}
-              alt={`QR Code for ${chestNumber}`}
-              width={200}
-              height={200}
-              className="w-48 h-48"
-            />
+          <div className="bg-white p-4 rounded-lg flex items-center justify-center min-w-[200px] min-h-[200px]">
+            {qrCode && qrCode.trim().length > 0 ? (
+              <Image
+                src={qrCode}
+                alt={`QR Code for ${chestNumber}`}
+                width={200}
+                height={200}
+                className="w-48 h-48"
+              />
+            ) : (
+              <div className="w-48 h-48 flex items-center justify-center bg-gray-50 border border-dashed border-gray-300 rounded-lg text-gray-400 text-xs text-center p-2">
+                Generating QR Code...
+              </div>
+            )}
           </div>
           <p className="text-sm text-muted-foreground text-center">
             Scan this QR code to view participant profile

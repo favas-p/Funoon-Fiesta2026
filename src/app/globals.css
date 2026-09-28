@@ -1,4 +1,24 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+:root {
+  --background: #ffffff;
+  --foreground: #09090b;
+  --primary: #70b040;
+  --primary-foreground: #ffffff;
+  --secondary: #f09030;
+  --secondary-foreground: #ffffff;
+  --accent: #f0b020;
+  --accent-foreground: #ffffff;
+  --brand-green: #70b040;
+  --brand-emerald: #064e3b;
+  --brand-orange: #f09030;
+  --brand-yellow: #f0b020;
+}
+
+.font-fest-display {
+  font-family: 'Anton', 'Bebas Neue', Impact, -apple-system, BlinkMacSystemFont, sans-serif;
+}
 
 @custom-variant dark (&:is(.dark *));
 
@@ -311,10 +331,9 @@ select option:hover {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Force all buttons to have rounded-2xl corners */
-button {
-  border-radius: 1rem !important;
-  /* rounded-2xl = 1rem */
+/* Force standard buttons to have rounded-2xl corners, allowing rounded-full for pills */
+button:not(.rounded-full):not([class*="rounded-full"]) {
+  border-radius: 1rem;
 }
 
 /* Better checkbox styling */

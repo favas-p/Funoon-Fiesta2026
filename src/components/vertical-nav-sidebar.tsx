@@ -42,8 +42,8 @@ export function VerticalNavSidebar() {
             ? "w-10 h-10 md:w-12 md:h-12 rounded-2xl group hover:rounded-2xl"
             : "flex-1 flex-col py-2 rounded-2xl",
           isActive
-            ? "bg-[#8B4513] text-white shadow-md shadow-[#8B4513]/20"
-            : "text-gray-600 hover:bg-gray-50 hover:text-[#8B4513]"
+            ? "bg-gradient-to-tr from-[#70B040] to-[#F09030] text-white shadow-md shadow-emerald-500/20"
+            : "text-gray-600 hover:bg-gray-50 hover:text-[#70B040]"
         )}
         title={item.label}
       >
@@ -58,7 +58,7 @@ export function VerticalNavSidebar() {
         )}
         {/* Active indicator glow */}
         {isActive && (
-          <span className="absolute inset-0 rounded-2xl bg-[#8B4513]/10 blur-lg -z-10" />
+          <span className="absolute inset-0 rounded-2xl bg-[#70B040]/20 blur-lg -z-10" />
         )}
         {/* Tooltip on hover (desktop only) */}
         {orientation === "vertical" && (
@@ -71,14 +71,17 @@ export function VerticalNavSidebar() {
     );
   };
 
+  const isHome = pathname === "/";
+
   return (
     <>
-      {/* Desktop vertical sidebar */}
-      <aside
-        className="hidden lg:flex fixed left-10 top-8 z-50 flex-col items-center"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+      {/* Desktop vertical sidebar (hidden on home page to let hero header shine) */}
+      {!isHome && (
+        <aside
+          className="hidden lg:flex fixed left-10 top-8 z-50 flex-col items-center"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
         {/* Trigger Icon */}
         <div className="cursor-pointer drop-shadow-lg transition-transform duration-300 hover:scale-105 relative z-20">
           <Image
@@ -105,6 +108,7 @@ export function VerticalNavSidebar() {
           )}
         </AnimatePresence>
       </aside>
+      )}
 
       {/* Mobile bottom navigation */}
       <div className="lg:hidden fixed inset-x-0 bottom-6 flex justify-center z-50 px-4">

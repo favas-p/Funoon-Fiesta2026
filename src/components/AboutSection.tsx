@@ -38,14 +38,14 @@ const features = [
 
 export function AboutSection() {
     return (
-        <section className="relative py-20 md:py-32 overflow-hidden bg-[#FFFCF5]">
+        <section className="relative py-20 md:py-32 overflow-hidden bg-[#FAF9F6]">
             {/* Decorative Background Elements */}
-            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-amber-500/5 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#8B4513]/5 rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-orange-500/5 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#70B040]/5 rounded-full blur-[100px] pointer-events-none" />
 
-            {/* Islamic Geometric Pattern Overlay (CSS Pattern) */}
+            {/* Geometric Pattern Overlay */}
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                style={{ backgroundImage: 'radial-gradient(#8B4513 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
+                style={{ backgroundImage: 'radial-gradient(#70B040 1px, transparent 1px)', backgroundSize: '32px 32px' }}>
             </div>
 
             <div className="container mx-auto px-4 md:px-6 relative z-10 max-w-7xl">
@@ -59,17 +59,17 @@ export function AboutSection() {
                             viewport={{ once: true }}
                             transition={{ duration: 0.6 }}
                         >
-                            <span className="inline-flex items-center rounded-full border mb-6 py-1.5 px-4 text-sm font-medium border-[#8B4513]/20 text-[#8B4513] bg-white shadow-sm">
+                            <span className="inline-flex items-center rounded-full border mb-6 py-1.5 px-4 text-sm font-semibold border-[#70B040]/20 text-[#70B040] bg-white shadow-sm">
                                 <Scroll className="w-3.5 h-3.5 mr-2" /> Our Legacy & Vision
                             </span>
 
-                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif text-[#3A2D28] leading-[1.1] mb-6">
-                                Where <span className="text-[#8B4513]">Culture</span> Meets <span className="italic font-light">Creativity</span>
+                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] mb-6 tracking-tight">
+                                Where <span className="text-[#70B040]">Culture</span> Meets <span className="text-[#F09030]">Creativity</span>
                             </h2>
 
-                            <div className="space-y-6 text-lg text-gray-600 leading-relaxed font-light">
+                            <div className="space-y-6 text-lg text-gray-600 leading-relaxed font-normal">
                                 <p>
-                                    More than just a festival, <strong className="text-[#8B4513] font-medium">Funoon Fiesta</strong> is a breathing legacy.
+                                    More than just a festival, <strong className="text-[#70B040] font-semibold">Funoon Fiesta</strong> is a breathing legacy.
                                     For over a century, the Malabar coast has resonated with the soulful rhythms of knowledge
                                     and faith. Today, we bridge that historic past with a vibrant, creative future.
                                 </p>
@@ -82,7 +82,7 @@ export function AboutSection() {
 
                             <div className="pt-4">
                                 <Link href="https://www.noorululama.org/">
-                                    <Button variant="outline" className="group border-[#8B4513] text-[#8B4513] hover:bg-[#8B4513] hover:text-white transition-all duration-300 rounded-full px-8 py-6 text-base">
+                                    <Button variant="outline" className="group border-[#70B040] text-[#70B040] hover:bg-[#70B040] hover:text-white transition-all duration-300 rounded-full px-8 py-6 text-base font-semibold shadow-sm">
                                         Discover Our Story <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                                     </Button>
                                 </Link>

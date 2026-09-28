@@ -92,14 +92,20 @@ export function ProfileCard({
           </div>
 
           <div className="flex flex-wrap items-start gap-4 sm:gap-5">
-            <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-full ring-2 ring-fuchsia-400/30 shadow-lg">
-              <Image
-                src={avatarSrc}
-                alt={`${name} avatar`}
-                fill
-                sizes="(max-width: 640px) 64px, 80px"
-                className="object-cover"
-              />
+            <div className="relative h-16 w-16 sm:h-20 sm:w-20 shrink-0 overflow-hidden rounded-full ring-2 ring-emerald-400/30 shadow-lg bg-emerald-950/40">
+              {avatarSrc && avatarSrc.trim().length > 0 ? (
+                <Image
+                  src={avatarSrc}
+                  alt={`${name} avatar`}
+                  fill
+                  sizes="(max-width: 640px) 64px, 80px"
+                  className="object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white font-bold text-xl sm:text-2xl bg-gradient-to-tr from-[#70B040] to-[#F09030]">
+                  {name ? name.trim()[0].toUpperCase() : "J"}
+                </div>
+              )}
             </div>
             <div className="min-w-0 flex-1 space-y-1">
               <h3 className="truncate text-xl font-semibold tracking-tight text-white sm:text-2xl">
