@@ -53,9 +53,13 @@ async function createStudentAction(formData: FormData) {
   }
 
   const name = String(formData.get("name") ?? "").trim();
+  const rollNo = String(formData.get("rollNo") ?? "").trim();
   
   if (!name) {
     redirectWithMessage("Student name is required.");
+  }
+  if (!rollNo) {
+    redirectWithMessage("Roll No / Token No is required.");
   }
 
   const students = await getPortalStudents();
@@ -64,18 +68,11 @@ async function createStudentAction(formData: FormData) {
   if (students.some((student) => student.chestNumber.toUpperCase() === chestNumber)) {
     redirectWithMessage("Chest number already registered.");
   }
-  if (
-    students.some(
-      (student) =>
-        student.teamId === team.id && student.name.toLowerCase() === name.toLowerCase(),
-    )
-  ) {
-    redirectWithMessage("Student name already exists for this team.");
-  }
   try {
     await upsertPortalStudent({
       name,
       chestNumber,
+      rollNo,
       teamId: team.id,
     });
   } catch (error) {
@@ -98,6 +95,7 @@ async function updateStudentAction(formData: FormData) {
   const studentId = String(formData.get("studentId") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const chestNumber = String(formData.get("chestNumber") ?? "").trim().toUpperCase();
+  const rollNo = String(formData.get("rollNo") ?? "").trim();
   if (!studentId) redirectWithMessage("Missing student ID.");
 
   const students = await getPortalStudents();
@@ -113,6 +111,7 @@ async function updateStudentAction(formData: FormData) {
       id: studentId,
       name,
       chestNumber,
+      rollNo,
       teamId: team.id,
     });
   } catch (error) {
@@ -213,10 +212,16 @@ export default async function RegisterStudentsPage({
         {isOpen ? (
           <>
             <ChestNumberPreview teamName={team.teamName} teamStudents={teamStudents} />
-            <form action={createStudentAction} className="mt-4 grid gap-3 sm:gap-4 sm:grid-cols-[1fr_auto]">
+            <form action={createStudentAction} className="mt-4 grid gap-3 sm:gap-4 sm:grid-cols-[1fr_1fr_auto]">
               <Input 
                 name="name" 
                 placeholder="Enter student name" 
+                required 
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+              />
+              <Input 
+                name="rollNo" 
+                placeholder="Enter Roll No / Token No" 
                 required 
                 className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
               />

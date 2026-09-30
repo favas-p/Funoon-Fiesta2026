@@ -88,6 +88,7 @@ export async function getPortalStudents(): Promise<PortalStudent[]> {
     id: student.id,
     name: student.name,
     chestNumber: student.chest_no,
+    rollNo: student.roll_no,
     teamId: student.team_id,
     teamName: teamMap.get(student.team_id) ?? "Unknown",
     score: student.total_points ?? 0,
@@ -98,18 +99,33 @@ export async function upsertPortalStudent(input: {
   id?: string;
   name: string;
   chestNumber: string;
+  rollNo?: string;
   teamId: string;
 }) {
   await connectDB();
   const chestNumber = input.chestNumber.trim().toUpperCase();
-  const duplicate = await StudentModel.findOne({
+  const rollNo = input.rollNo ? input.rollNo.trim().toUpperCase() : undefined;
+
+  const duplicateChest = await StudentModel.findOne({
     chest_no: chestNumber,
     ...(input.id ? { id: { $ne: input.id } } : {}),
   })
     .lean()
     .exec();
-  if (duplicate) {
-    throw new Error(`Chest number "${input.chestNumber}" is already registered to student "${duplicate.name}".`);
+  if (duplicateChest) {
+    throw new Error(`Chest number "${input.chestNumber}" is already registered to student "${duplicateChest.name}".`);
+  }
+
+  if (rollNo) {
+    const duplicateRoll = await StudentModel.findOne({
+      roll_no: rollNo,
+      ...(input.id ? { id: { $ne: input.id } } : {}),
+    })
+      .lean()
+      .exec();
+    if (duplicateRoll) {
+      throw new Error(`Roll No / Token No "${input.rollNo}" is already registered to student "${duplicateRoll.name}".`);
+    }
   }
 
   const studentId = input.id ?? randomUUID();
@@ -122,6 +138,7 @@ export async function upsertPortalStudent(input: {
         $set: {
           name: input.name,
           chest_no: chestNumber,
+          roll_no: rollNo,
           team_id: input.teamId,
         },
         $setOnInsert: { total_points: 0 },
@@ -137,9 +154,14 @@ export async function upsertPortalStudent(input: {
       await emitStudentUpdated(studentId, input.teamId);
     }
   } catch (error: any) {
-    // Handle MongoDB duplicate key error (code 11000) for chest_no unique index
-    if (error.code === 11000 && error.keyPattern?.chest_no) {
-      throw new Error(`Chest number "${input.chestNumber}" is already registered.`);
+    // Handle MongoDB duplicate key error (code 11000) for unique indexes
+    if (error.code === 11000) {
+      if (error.keyPattern?.chest_no) {
+        throw new Error(`Chest number "${input.chestNumber}" is already registered.`);
+      }
+      if (error.keyPattern?.roll_no) {
+        throw new Error(`Roll No / Token No "${input.rollNo}" is already registered.`);
+      }
     }
     throw error;
   }

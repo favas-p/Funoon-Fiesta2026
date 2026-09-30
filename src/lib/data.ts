@@ -244,14 +244,25 @@ export async function createStudent(input: Omit<Student, "id" | "total_points">)
 
   // Normalize chest number to uppercase for consistent comparison
   const normalizedChestNo = input.chest_no.trim().toUpperCase();
+  const normalizedRollNo = input.roll_no ? input.roll_no.trim().toUpperCase() : undefined;
 
   // Check for duplicate chest number
-  const existing = await StudentModel.findOne({
+  const existingChest = await StudentModel.findOne({
     chest_no: normalizedChestNo
   }).lean();
 
-  if (existing) {
-    throw new Error(`Chest number "${input.chest_no}" is already registered to student "${existing.name}".`);
+  if (existingChest) {
+    throw new Error(`Chest number "${input.chest_no}" is already registered to student "${existingChest.name}".`);
+  }
+
+  if (normalizedRollNo) {
+    const existingRoll = await StudentModel.findOne({
+      roll_no: normalizedRollNo
+    }).lean();
+
+    if (existingRoll) {
+      throw new Error(`Roll No / Token No "${input.roll_no}" is already registered to student "${existingRoll.name}".`);
+    }
   }
 
   try {
@@ -259,6 +270,7 @@ export async function createStudent(input: Omit<Student, "id" | "total_points">)
     await StudentModel.create({
       ...input,
       chest_no: normalizedChestNo,
+      roll_no: normalizedRollNo,
       id: studentId,
       total_points: 0,
     });
@@ -269,7 +281,12 @@ export async function createStudent(input: Omit<Student, "id" | "total_points">)
   } catch (error: any) {
     // Handle MongoDB duplicate key error (code 11000)
     if (error.code === 11000) {
-      throw new Error(`Chest number "${input.chest_no}" is already registered.`);
+      if (error.keyPattern?.chest_no) {
+        throw new Error(`Chest number "${input.chest_no}" is already registered.`);
+      }
+      if (error.keyPattern?.roll_no) {
+        throw new Error(`Roll No / Token No "${input.roll_no}" is already registered.`);
+      }
     }
     throw error;
   }
@@ -299,6 +316,21 @@ export async function updateStudentById(
     data.chest_no = normalizedChestNo;
   }
 
+  if (data.roll_no) {
+    const normalizedRollNo = data.roll_no.trim().toUpperCase();
+
+    const existingRoll = await StudentModel.findOne({
+      roll_no: normalizedRollNo,
+      id: { $ne: id }
+    }).lean();
+
+    if (existingRoll) {
+      throw new Error(`Roll No / Token No "${data.roll_no}" is already registered to student "${existingRoll.name}".`);
+    }
+
+    data.roll_no = normalizedRollNo;
+  }
+
   try {
     // Get team_id before update
     const student = await StudentModel.findOne({ id }).lean();
@@ -314,7 +346,12 @@ export async function updateStudentById(
   } catch (error: any) {
     // Handle MongoDB duplicate key error (code 11000)
     if (error.code === 11000) {
-      throw new Error(`Chest number "${data.chest_no}" is already registered.`);
+      if (error.keyPattern?.chest_no) {
+        throw new Error(`Chest number "${data.chest_no}" is already registered.`);
+      }
+      if (error.keyPattern?.roll_no) {
+        throw new Error(`Roll No / Token No "${data.roll_no}" is already registered.`);
+      }
     }
     throw error;
   }

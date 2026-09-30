@@ -19,6 +19,7 @@ export interface Student {
   name: string;
   team_id: string;
   chest_no: string;
+  roll_no?: string;
   avatar?: string;
   total_points: number;
   phone_number?: string; // Added for Festory verification
@@ -95,6 +96,7 @@ export interface PortalStudent {
   id: string;
   name: string;
   chestNumber: string;
+  rollNo?: string;
   teamId: string;
   teamName: string;
   score: number;

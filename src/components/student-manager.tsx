@@ -88,7 +88,9 @@ export const StudentManager = React.memo(function StudentManager({
     return students.filter((student) => {
       const query = debouncedSearchQuery.trim().toLowerCase();
       const matchesSearch =
-        student.name.toLowerCase().includes(query) || student.chest_no.toLowerCase().includes(query);
+        student.name.toLowerCase().includes(query) ||
+        student.chest_no.toLowerCase().includes(query) ||
+        (student.roll_no?.toLowerCase().includes(query) ?? false);
       const matchesTeam = teamFilter ? student.team_id === teamFilter : true;
       const matchesProgram = programFilter
         ? studentRegistrationsMap.get(student.id)?.has(programFilter) ?? false
@@ -156,10 +158,11 @@ export const StudentManager = React.memo(function StudentManager({
   const viewStudent = viewStudentId ? students.find((student) => student.id === viewStudentId) : null;
 
   const exportToCSV = () => {
-    const headers = ["Name", "Chest Number", "Team", "Total Points"];
+    const headers = ["Name", "Chest Number", "Roll No", "Team", "Total Points"];
     const rows = sortedStudents.map((student) => [
       student.name,
       student.chest_no,
+      student.roll_no || "",
       teamMap.get(student.team_id) ?? "Unknown",
       student.total_points.toString(),
     ]);
@@ -205,8 +208,8 @@ export const StudentManager = React.memo(function StudentManager({
       
       yPos += 4;
       
-      const headers = ["Name", "Chest Number", "Team", "Total Points"];
-      const colWidths = [60, 40, 50, 30];
+      const headers = ["Name", "Chest Number", "Roll No", "Team", "Total Points"];
+      const colWidths = [50, 30, 35, 45, 25];
       const startX = 14;
       
       doc.setFontSize(10);
@@ -231,6 +234,7 @@ export const StudentManager = React.memo(function StudentManager({
         const rowData = [
           student.name,
           student.chest_no,
+          student.roll_no || "-",
           teamMap.get(student.team_id) ?? "Unknown",
           student.total_points.toString(),
         ];
@@ -429,6 +433,11 @@ export const StudentManager = React.memo(function StudentManager({
                     {teamMap.get(student.team_id) ?? "Unknown team"}
                   </span>
                   <span className="rounded-full border border-white/15 px-3 py-1">Chest #{student.chest_no}</span>
+                  {student.roll_no && (
+                    <span className="rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1 text-cyan-300">
+                      Roll #{student.roll_no}
+                    </span>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2 w-full xl:ml-auto xl:w-auto xl:justify-end">
                   <Button
@@ -463,10 +472,11 @@ export const StudentManager = React.memo(function StudentManager({
               {isEditing && (
                 <form
                   action={updateAction}
-                  className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white md:grid-cols-3"
+                  className="mt-4 grid gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white md:grid-cols-4"
                 >
                   <input type="hidden" name="id" value={student.id} />
                   <Input name="name" defaultValue={student.name} placeholder="Student name" />
+                  <Input name="roll_no" defaultValue={student.roll_no || ""} placeholder="Roll No / Token No" />
                   <input type="hidden" name="chest_no" value={student.chest_no} />
                   <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70">
                     Chest: {student.chest_no}
@@ -477,7 +487,7 @@ export const StudentManager = React.memo(function StudentManager({
                     options={teams.map((team) => ({ value: team.id, label: team.name }))}
                     placeholder="Select team"
                   />
-                  <div className="flex items-center gap-3 md:col-span-3">
+                  <div className="flex items-center gap-3 md:col-span-4">
                     <Button type="submit" className="flex-1">
                       Save changes
                     </Button>
@@ -557,6 +567,9 @@ export const StudentManager = React.memo(function StudentManager({
             </p>
             <p>
               <span className="text-white/50">Chest number:</span> {viewStudent.chest_no}
+            </p>
+            <p>
+              <span className="text-white/50">Roll No / Token No:</span> {viewStudent.roll_no || "N/A"}
             </p>
           </div>
         )}

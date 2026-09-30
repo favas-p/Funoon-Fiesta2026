@@ -29,6 +29,7 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editChestNumber, setEditChestNumber] = useState("");
+  const [editRollNo, setEditRollNo] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter students based on search query
@@ -41,8 +42,9 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
     return students.filter((student) => {
       const nameMatch = student.name.toLowerCase().includes(query);
       const chestMatch = student.chestNumber.toLowerCase().includes(query);
+      const rollMatch = student.rollNo?.toLowerCase().includes(query) ?? false;
       const teamMatch = student.teamName.toLowerCase().includes(query);
-      return nameMatch || chestMatch || teamMatch;
+      return nameMatch || chestMatch || rollMatch || teamMatch;
     });
   }, [students, searchQuery]);
 
@@ -50,12 +52,14 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
     setEditingId(student.id);
     setEditName(student.name);
     setEditChestNumber(student.chestNumber);
+    setEditRollNo(student.rollNo || "");
   };
 
   const handleCancel = () => {
     setEditingId(null);
     setEditName("");
     setEditChestNumber("");
+    setEditRollNo("");
   };
 
   const handleSave = async (studentId: string) => {
@@ -63,10 +67,12 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
     formData.append("studentId", studentId);
     formData.append("name", editName.trim());
     formData.append("chestNumber", editChestNumber.trim().toUpperCase());
+    formData.append("rollNo", editRollNo.trim());
     await updateAction(formData);
     setEditingId(null);
     setEditName("");
     setEditChestNumber("");
+    setEditRollNo("");
   };
 
   const handleDelete = async (studentId: string) => {
@@ -161,7 +167,7 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-3">
                   <div>
                     <label className="text-xs text-white/60 mb-1.5 block">Student Name</label>
                     <Input
@@ -179,6 +185,15 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
                       placeholder="Chest number"
                       className="bg-white/10 border-white/20 text-white"
                       maxLength={10}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-white/60 mb-1.5 block">Roll No / Token No</label>
+                    <Input
+                      value={editRollNo}
+                      onChange={(e) => setEditRollNo(e.target.value)}
+                      placeholder="Roll No"
+                      className="bg-white/10 border-white/20 text-white"
                     />
                   </div>
                 </div>
@@ -210,9 +225,16 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-white truncate">{student.name}</p>
-                    <div className="flex items-center gap-2 mt-1 text-sm text-white/60">
-                      <Hash className="h-3 w-3" />
-                      <span className="font-mono">{student.chestNumber}</span>
+                    <div className="flex items-center gap-3 mt-1 text-sm text-white/60">
+                      <div className="flex items-center gap-1">
+                        <Hash className="h-3 w-3" />
+                        <span className="font-mono">{student.chestNumber}</span>
+                      </div>
+                      {student.rollNo && (
+                        <div className="flex items-center gap-1 text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded text-xs">
+                          <span>Roll: {student.rollNo}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -255,7 +277,7 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
             {/* View Details Panel */}
             {isViewing && !isEditing && (
               <div className="mt-4 pt-4 border-t border-white/10">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-xs text-white/60 mb-1">Student Name</p>
                     <p className="font-medium text-white">{student.name}</p>
@@ -263,6 +285,10 @@ export function TeamStudentList({ students, updateAction, deleteAction, isRegist
                   <div>
                     <p className="text-xs text-white/60 mb-1">Chest Number</p>
                     <p className="font-mono font-medium text-white">{student.chestNumber}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-white/60 mb-1">Roll No / Token No</p>
+                    <p className="font-mono font-medium text-cyan-300">{student.rollNo || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-xs text-white/60 mb-1">Team</p>

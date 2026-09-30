@@ -45,6 +45,7 @@ const studentSchema = z.object({
   name: z.string().min(2),
   team_id: z.string().min(2),
   chest_no: z.string().optional(),
+  roll_no: z.string().optional(),
 });
 
 const csvStudentSchema = z.object({
@@ -52,6 +53,7 @@ const csvStudentSchema = z.object({
   team_id: z.string().min(2).optional(),
   team_name: z.string().min(2).optional(),
   chest_no: z.string().optional(),
+  roll_no: z.string().optional(),
 }).refine((data) => data.team_id || data.team_name, {
   message: "Either team_id or team_name is required",
   path: ["team_id"],
@@ -63,6 +65,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
     name: String(formData.get("name") ?? "").trim(),
     team_id: String(formData.get("team_id") ?? "").trim(),
     chest_no: String(formData.get("chest_no") ?? "").trim() || undefined,
+    roll_no: String(formData.get("roll_no") ?? "").trim() || undefined,
   });
   if (!parsed.success) {
     throw new Error(parsed.error.issues.map((issue) => issue.message).join(", "));
@@ -92,6 +95,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
       name: payload.name,
       team_id: payload.team_id,
       chest_no: chest_no!,
+      roll_no: payload.roll_no,
     });
   } else {
     if (!payload.id) throw new Error("Student ID missing");
@@ -99,6 +103,7 @@ async function upsertStudent(formData: FormData, mode: "create" | "update") {
       name: payload.name,
       team_id: payload.team_id,
       chest_no: chest_no!,
+      roll_no: payload.roll_no,
     });
   }
 

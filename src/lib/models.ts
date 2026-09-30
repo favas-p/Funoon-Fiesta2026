@@ -68,14 +68,16 @@ const StudentSchema = new Schema<Student>(
     name: { type: String, required: true },
     team_id: { type: String, required: true },
     chest_no: { type: String, required: true },
+    roll_no: { type: String },
     avatar: { type: String },
     total_points: { type: Number, default: 0 },
     phone_number: { type: String },
   },
   { timestamps: true },
 );
-// Unique index for chest numbers to prevent duplicates globally
+// Unique index for chest numbers and roll numbers to prevent duplicates globally
 StudentSchema.index({ chest_no: 1 }, { unique: true });
+StudentSchema.index({ roll_no: 1 }, { unique: true, sparse: true });
 
 const ProgramSchema = new Schema<Program>(
   {
