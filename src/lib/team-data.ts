@@ -292,6 +292,11 @@ export function validateParticipationLimit(
   program: Program,
   allPrograms: Program[],
   registrations: ProgramRegistration[],
+  customLimits?: {
+    maxSingleOnStage?: number;
+    maxSingleOffStage?: number;
+    maxGeneral?: number;
+  },
 ): { allowed: boolean; reason?: string; currentCount?: number; maxCount?: number } {
   // Get all registrations for this student
   const studentRegistrations = registrations.filter((reg) => reg.studentId === studentId);
@@ -310,7 +315,9 @@ export function validateParticipationLimit(
       );
     });
 
-    const maxCount = program.stage ? 3 : 4;
+    const maxCount = program.stage
+      ? (customLimits?.maxSingleOnStage ?? 3)
+      : (customLimits?.maxSingleOffStage ?? 4);
     const currentCount = sameStageRegistrations.length;
 
     if (currentCount >= maxCount) {
@@ -327,13 +334,13 @@ export function validateParticipationLimit(
   }
 
   if (program.section === "general") {
-    // General events: maximum 3
+    // General events limit
     const generalRegistrations = studentRegistrations.filter((reg) => {
       const regProgram = programMap.get(reg.programId);
       return regProgram?.section === "general" && reg.programId !== program.id;
     });
 
-    const maxCount = 3;
+    const maxCount = customLimits?.maxGeneral ?? 3;
     const currentCount = generalRegistrations.length;
 
     if (currentCount >= maxCount) {

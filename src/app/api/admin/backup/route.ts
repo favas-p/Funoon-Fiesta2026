@@ -13,7 +13,7 @@ import {
     LiveScoreModel,
     ReplacementRequestModel,
     NotificationModel,
-    AdminSettingsModel,
+    FestConfigModel,
 } from "@/lib/models";
 import { isAdminAuthenticated } from "@/lib/auth";
 
@@ -37,9 +37,10 @@ export async function GET() {
         liveScores: await LiveScoreModel.find({}).lean(),
         replacementRequests: await ReplacementRequestModel.find({}).lean(),
         notifications: await NotificationModel.find({}).lean(),
+        festConfig: await FestConfigModel.findOne({ id: "global" }).lean(),
         // Security: Do NOT export admin settings (contains hashed credentials)
         timestamp: new Date().toISOString(),
-        version: "1.1",
+        version: "1.2",
     };
 
     const json = JSON.stringify(data, null, 2);

@@ -102,6 +102,37 @@ export default function Sidenavbar({
                 <nav className="space-y-1 px-3">
                   {items.map((item) => {
                     const IconComponent = item.icon ? ICONS[item.icon] : undefined;
+
+                    if (item.children && item.children.length > 0) {
+                      return (
+                        <div key={item.label} className="space-y-1">
+                          <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold uppercase text-white/50">
+                            {IconComponent && <IconComponent className="h-3.5 w-3.5" />}
+                            <span>{item.label}</span>
+                          </div>
+                          {item.children.map((child) => (
+                            <Button
+                              key={child.href}
+                              variant="ghost"
+                              className="w-full justify-start pl-6 text-sm"
+                              asChild
+                              onClick={() => setMobileOpen(false)}
+                            >
+                              <Link
+                                href={child.href}
+                                className={cn(
+                                  "flex w-full items-center gap-3 rounded-xl px-3 py-1.5 text-sm text-white/80",
+                                  pathname === child.href.split("?")[0] && "bg-white/10 text-white font-medium",
+                                )}
+                              >
+                                <span>{child.label}</span>
+                              </Link>
+                            </Button>
+                          ))}
+                        </div>
+                      );
+                    }
+
                     return (
                       <Button
                         key={item.href ?? item.label}
@@ -114,8 +145,7 @@ export default function Sidenavbar({
                           href={item.href ?? "#"}
                           className={cn(
                             "flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-sm",
-                            pathname?.startsWith(item.href ?? "") &&
-                            "bg-white/10 text-white",
+                            pathname === item.href && "bg-white/10 text-white font-medium",
                           )}
                         >
                           {IconComponent && (
@@ -169,9 +199,9 @@ export default function Sidenavbar({
             <nav className="p-3 space-y-1">
               {items.map((item) => {
                 const IconComponent = item.icon ? ICONS[item.icon] : undefined;
-                const isActive = pathname?.startsWith(item.href ?? "");
+                const isActive = item.href && pathname === item.href.split("?")[0];
                 const hasActiveChild = item.children?.some((child) =>
-                  pathname?.startsWith(child.href)
+                  pathname === child.href.split("?")[0]
                 ) ?? false;
 
                 return item.children && item.children.length > 0 ? (
@@ -184,9 +214,8 @@ export default function Sidenavbar({
                       <Button
                         variant="ghost"
                         className={cn(
-                          "w-full rounded-2xl h-10",
-                          isActive && "bg-white/10 text-white",
-                          !isActive && "text-white/70 hover:bg-white/10 hover:text-white",
+                          "w-full rounded-2xl h-10 bg-transparent text-white/80 hover:bg-white/5 hover:text-white",
+                          (isActive || hasActiveChild) && "text-white font-semibold",
                           !isOpen ? "justify-center px-0" : "justify-start px-3",
                         )}
                         title={!isOpen ? item.label : undefined}
@@ -214,9 +243,9 @@ export default function Sidenavbar({
                             size="sm"
                             className={cn(
                               "w-full justify-start rounded-2xl h-9 text-white/80",
-                              pathname?.startsWith(child.href) &&
-                              "bg-white/10 text-white",
-                              !pathname?.startsWith(child.href) && "hover:bg-white/10 hover:text-white"
+                              pathname === child.href.split("?")[0] &&
+                              "bg-white/10 text-white font-medium",
+                              !(pathname === child.href.split("?")[0]) && "hover:bg-white/10 hover:text-white"
                             )}
                             asChild
                           >

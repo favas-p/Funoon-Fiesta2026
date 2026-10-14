@@ -10,6 +10,7 @@ import type {
   SectionType,
   Student,
   Team,
+  FestConfig,
 } from "./types";
 import { connectDB } from "./db";
 import {
@@ -21,6 +22,7 @@ import {
   ProgramModel,
   StudentModel,
   TeamModel,
+  FestConfigModel,
 } from "./models";
 
 let seedPromise: Promise<void> | null = null;
@@ -525,12 +527,51 @@ const GENERAL_SCORES: Record<1 | 2 | 3, number> = {
   3: 10,
 };
 
+export async function getFestConfig(): Promise<FestConfig> {
+  await connectDB();
+  let doc = await FestConfigModel.findOne({ id: "global" }).lean<FestConfig>();
+  if (!doc) {
+    const created = await FestConfigModel.create({ id: "global" });
+    doc = created.toObject() as FestConfig;
+  }
+  return JSON.parse(JSON.stringify(doc));
+}
+
+export async function updateFestConfig(data: Partial<FestConfig>): Promise<void> {
+  await connectDB();
+  await FestConfigModel.updateOne(
+    { id: "global" },
+    { $set: data },
+    { upsert: true }
+  );
+}
+
 export function calculateScore(
   section: SectionType,
   category: CategoryType,
   position: 1 | 2 | 3,
   grade: CategoryType = "none",
+  scoringConfig?: FestConfig["scoring"],
 ): number {
+  if (scoringConfig) {
+    if (section === "single") {
+      let base = 0;
+      if (scoringConfig.enableCategories) {
+        if (category !== "none" && scoringConfig.categoryScores && scoringConfig.categoryScores[category as "A" | "B" | "C"]) {
+          base = scoringConfig.categoryScores[category as "A" | "B" | "C"][position] ?? 0;
+        }
+      } else {
+        base = scoringConfig.flatSingleScores?.[position] ?? 0;
+      }
+      const bonus = grade !== "none" && scoringConfig.gradeBonus && scoringConfig.gradeBonus[grade as "A" | "B" | "C"]
+        ? scoringConfig.gradeBonus[grade as "A" | "B" | "C"]
+        : 0;
+      return base + bonus;
+    }
+
+    return scoringConfig.generalScores?.[position] ?? 0;
+  }
+
   if (section === "single") {
     const base = category !== "none" ? CATEGORY_SCORES[category][position] : 0;
     const bonus = grade !== "none" ? GRADE_BONUS[grade] : 0;

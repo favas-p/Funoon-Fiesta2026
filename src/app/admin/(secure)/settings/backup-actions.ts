@@ -15,6 +15,7 @@ import {
     ReplacementRequestModel,
     NotificationModel,
     AdminSettingsModel,
+    FestConfigModel,
 } from "@/lib/models";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -53,33 +54,93 @@ export async function restoreDatabase(data: any) {
 
     await connectDB();
 
-    // Helper to clear and insert
-    const restoreCollection = async (model: any, items: any[]) => {
-        if (Array.isArray(items)) {
-            await model.deleteMany({});
-            if (items.length > 0) {
-                await model.insertMany(items);
-            }
+    // Helper to clean documents and insert safely
+    const restoreCollection = async (model: any, rawItems: any): Promise<number> => {
+        if (!Array.isArray(rawItems)) {
+            return 0;
         }
+
+        await model.deleteMany({});
+        if (rawItems.length === 0) {
+            return 0;
+        }
+
+        // Clean items: remove MongoDB internal _id if needed, or pass documents
+        const cleanedItems = rawItems.map((item) => {
+            if (!item || typeof item !== "object") return item;
+            const { _id, __v, ...rest } = item;
+            // Keep original _id only if valid 24-hex string, otherwise let MongoDB generate one
+            if (_id && typeof _id === "string" && /^[0-9a-fA-F]{24}$/.test(_id)) {
+                return { _id, ...rest };
+            }
+            return rest;
+        });
+
+        try {
+            await model.insertMany(cleanedItems, { ordered: false });
+        } catch (err: any) {
+            // If duplicate key error on non-ordered insert, some documents still succeeded
+            console.warn(`Partial insert for ${model.modelName}:`, err.message);
+        }
+
+        return await model.countDocuments();
     };
 
     try {
-        await restoreCollection(TeamModel, data.teams);
-        await restoreCollection(StudentModel, data.students);
-        await restoreCollection(ProgramModel, data.programs);
-        await restoreCollection(JuryModel, data.juries);
-        await restoreCollection(AssignedProgramModel, data.assignedPrograms);
-        await restoreCollection(ProgramRegistrationModel, data.programRegistrations);
-        await restoreCollection(RegistrationScheduleModel, data.registrationSchedules);
-        await restoreCollection(PendingResultModel, data.pendingResults);
-        await restoreCollection(ApprovedResultModel, data.approvedResults);
-        await restoreCollection(LiveScoreModel, data.liveScores);
-        await restoreCollection(ReplacementRequestModel, data.replacementRequests);
-        await restoreCollection(NotificationModel, data.notifications);
-        await restoreCollection(AdminSettingsModel, data.adminSettings);
+        const teams = data.teams || data.team;
+        const students = data.students || data.student;
+        const programs = data.programs || data.program;
+        const juries = data.juries || data.jury;
+        const assignedPrograms = data.assignedPrograms || data.assigned_programs || data.assignments;
+        const programRegistrations =
+            data.programRegistrations ||
+            data.program_registrations ||
+            data.programregistrations ||
+            data.programRegistration ||
+            data.programregitration ||
+            data.registrations;
+        const registrationSchedules = data.registrationSchedules || data.registration_schedules || data.schedules;
+        const pendingResults = data.pendingResults || data.pending_results;
+        const approvedResults = data.approvedResults || data.approved_results;
+        const liveScores = data.liveScores || data.live_scores;
+        const replacementRequests = data.replacementRequests || data.replacement_requests;
+        const notifications = data.notifications;
+        const adminSettings = data.adminSettings || data.admin_settings;
+        const festConfig = data.festConfig || data.festConfigs || data.fest_config;
+
+        const [
+            teamCount,
+            studentCount,
+            programCount,
+            regCount,
+        ] = await Promise.all([
+            restoreCollection(TeamModel, teams),
+            restoreCollection(StudentModel, students),
+            restoreCollection(ProgramModel, programs),
+            restoreCollection(ProgramRegistrationModel, programRegistrations),
+        ]);
+
+        await Promise.all([
+            restoreCollection(JuryModel, juries),
+            restoreCollection(AssignedProgramModel, assignedPrograms),
+            restoreCollection(RegistrationScheduleModel, registrationSchedules),
+            restoreCollection(PendingResultModel, pendingResults),
+            restoreCollection(ApprovedResultModel, approvedResults),
+            restoreCollection(LiveScoreModel, liveScores),
+            restoreCollection(ReplacementRequestModel, replacementRequests),
+            restoreCollection(NotificationModel, notifications),
+            restoreCollection(AdminSettingsModel, adminSettings),
+            festConfig ? restoreCollection(FestConfigModel, Array.isArray(festConfig) ? festConfig : [festConfig]) : Promise.resolve(0),
+        ]);
 
         revalidatePath("/");
-        return { success: true, message: "Database restored successfully" };
+        revalidatePath("/admin/settings");
+        revalidatePath("/team/program-register");
+
+        return {
+            success: true,
+            message: `Database restored successfully! (${teamCount} teams, ${studentCount} students, ${programCount} programs, ${regCount} program registrations)`,
+        };
     } catch (error: any) {
         console.error("Restore failed:", error);
         return { success: false, message: error.message || "Restore failed" };

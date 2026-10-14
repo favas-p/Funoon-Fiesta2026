@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { TeamProgramRegister } from "@/components/team-program-register";
 import { getCurrentTeam } from "@/lib/auth";
+import { getFestConfig } from "@/lib/data";
 import {
   getPortalStudents,
   getProgramRegistrations,
@@ -31,10 +32,11 @@ async function registerProgramAction(formData: FormData) {
   const studentId = String(formData.get("studentId") ?? "");
   if (!programId || !studentId) redirectWithMessage("Program and student are required.");
 
-  const [programs, students, registrations] = await Promise.all([
+  const [programs, students, registrations, festConfig] = await Promise.all([
     getProgramsWithLimits(),
     getPortalStudents(),
     getProgramRegistrations(),
+    getFestConfig(),
   ]);
   const program = programs.find((item) => item.id === programId);
   if (!program) {
@@ -63,7 +65,7 @@ async function registerProgramAction(formData: FormData) {
   }
 
   // Check participation limits
-  const limitCheck = validateParticipationLimit(studentId, program, programs, registrations);
+  const limitCheck = validateParticipationLimit(studentId, program, programs, registrations, festConfig.limits);
   if (!limitCheck.allowed) {
     redirectWithMessage(limitCheck.reason || "Participation limit reached for this program type.");
   }
@@ -102,10 +104,11 @@ async function registerMultipleStudentsAction(formData: FormData) {
   const studentIds = studentIdsStr.split(",").filter(Boolean);
   if (studentIds.length === 0) redirectWithMessage("At least one student must be selected.");
 
-  const [programs, students, registrations] = await Promise.all([
+  const [programs, students, registrations, festConfig] = await Promise.all([
     getProgramsWithLimits(),
     getPortalStudents(),
     getProgramRegistrations(),
+    getFestConfig(),
   ]);
   const program = programs.find((item) => item.id === programId);
   if (!program) {
@@ -142,7 +145,7 @@ async function registerMultipleStudentsAction(formData: FormData) {
 
   const limitViolations: string[] = [];
   for (const student of selectedStudents) {
-    const limitCheck = validateParticipationLimit(student.id, program, programs, registrations);
+    const limitCheck = validateParticipationLimit(student.id, program, programs, registrations, festConfig.limits);
     if (!limitCheck.allowed) {
       limitViolations.push(`${student.name}: ${limitCheck.reason || "Participation limit reached"}`);
     }
@@ -213,11 +216,12 @@ export default async function ProgramRegisterPage({
   const params = await searchParams;
   const team = await getCurrentTeam();
   if (!team) redirect("/team/login");
-  const [programs, registrations, students, open] = await Promise.all([
+  const [programs, registrations, students, open, festConfig] = await Promise.all([
     getProgramsWithLimits(),
     getProgramRegistrations(),
     getPortalStudents(),
     isRegistrationOpen(),
+    getFestConfig(),
   ]);
   const teamRegistrations = registrations.filter(
     (registration) => registration.teamId === team.id,
@@ -256,6 +260,7 @@ export default async function ProgramRegisterPage({
         teamRegistrations={teamRegistrations}
         teamStudents={teamStudents}
         isOpen={open}
+        festLimits={festConfig.limits}
         registerAction={registerProgramAction}
         registerMultipleAction={registerMultipleStudentsAction}
         removeAction={removeRegistrationAction}

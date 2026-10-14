@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Program, ProgramRegistration, PortalStudent } from "@/lib/types";
+import type { Program, ProgramRegistration, PortalStudent, FestConfig } from "@/lib/types";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ interface Props {
   teamRegistrations: ProgramRegistration[];
   teamStudents: PortalStudent[];
   isOpen: boolean;
+  festLimits?: FestConfig["limits"];
   registerAction: (formData: FormData) => Promise<void>;
   registerMultipleAction: (formData: FormData) => Promise<void>;
   removeAction: (formData: FormData) => Promise<void>;
@@ -33,6 +34,7 @@ function ProgramRegistrationCard({
   remainingSlots,
   isGroupOrGeneral,
   isOpen,
+  festLimits,
   registerAction,
   registerMultipleAction,
   removeAction,
@@ -45,6 +47,7 @@ function ProgramRegistrationCard({
   remainingSlots: number;
   isGroupOrGeneral: boolean;
   isOpen: boolean;
+  festLimits?: FestConfig["limits"];
   registerAction: (formData: FormData) => Promise<void>;
   registerMultipleAction: (formData: FormData) => Promise<void>;
   removeAction: (formData: FormData) => Promise<void>;
@@ -74,7 +77,9 @@ function ProgramRegistrationCard({
         );
       });
 
-      const maxCount = program.stage ? 3 : 4;
+      const maxCount = program.stage
+        ? (festLimits?.maxSingleOnStage ?? 3)
+        : (festLimits?.maxSingleOffStage ?? 4);
       const currentCount = sameStageRegistrations.length;
 
       if (currentCount >= maxCount) {
@@ -91,13 +96,13 @@ function ProgramRegistrationCard({
     }
 
     if (program.section === "general") {
-      // General events: maximum 3
+      // General events
       const generalRegistrations = studentRegistrations.filter((reg) => {
         const regProgram = programMap.get(reg.programId);
         return regProgram?.section === "general" && reg.programId !== program.id;
       });
 
-      const maxCount = 3;
+      const maxCount = festLimits?.maxGeneral ?? 3;
       const currentCount = generalRegistrations.length;
 
       if (currentCount >= maxCount) {
@@ -385,7 +390,9 @@ function ProgramRegistrationCard({
                           reg.programId !== program.id
                         );
                       });
-                      const maxCount = program.stage ? 3 : 4;
+                      const maxCount = program.stage
+                        ? (festLimits?.maxSingleOnStage ?? 3)
+                        : (festLimits?.maxSingleOffStage ?? 4);
                       return {
                         allowed: sameStageRegistrations.length < maxCount,
                         currentCount: sameStageRegistrations.length,
@@ -398,7 +405,7 @@ function ProgramRegistrationCard({
                         const regProgram = programMap.get(reg.programId);
                         return regProgram?.section === "general" && reg.programId !== program.id;
                       });
-                      const maxCount = 3;
+                      const maxCount = festLimits?.maxGeneral ?? 3;
                       return {
                         allowed: generalRegistrations.length < maxCount,
                         currentCount: generalRegistrations.length,
@@ -446,6 +453,7 @@ export function TeamProgramRegister({
   programs,
   allPrograms,
   isOpen,
+  festLimits,
   registerAction,
   registerMultipleAction,
   removeAction,
@@ -496,6 +504,7 @@ export function TeamProgramRegister({
             remainingSlots={remainingSlots}
             isGroupOrGeneral={isGroupOrGeneral}
             isOpen={isOpen}
+            festLimits={festLimits}
             registerAction={registerAction}
             registerMultipleAction={registerMultipleAction}
             removeAction={removeAction}

@@ -252,3 +252,36 @@ export interface FestoryUser {
   image?: string;
   profileImageUpdateCount?: number;
 }
+
+export interface FestConfig {
+  id: string; // 'global'
+  limits: {
+    maxSingleOnStage: number;   // Default: 3
+    maxSingleOffStage: number;  // Default: 4
+    maxGeneral: number;         // Default: 3
+  };
+  scoring: {
+    enableCategories: boolean;  // Default: true
+    categoryScores: {
+      A: { 1: number; 2: number; 3: number };
+      B: { 1: number; 2: number; 3: number };
+      C: { 1: number; 2: number; 3: number };
+    };
+    gradeBonus: {
+      A: number;
+      B: number;
+      C: number;
+    };
+    generalScores: {
+      1: number;
+      2: number;
+      3: number;
+    };
+    flatSingleScores?: {
+      1: number;
+      2: number;
+      3: number;
+    };
+  };
+}
+

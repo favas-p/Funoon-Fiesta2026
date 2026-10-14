@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import {
   calculateScore,
+  getFestConfig,
   updateAssignmentStatus,
   updateLiveScore,
   updateStudentScore,
@@ -41,6 +42,9 @@ async function buildEntries(
   program: { id: string; section: string; category: string },
   winners: WinnerPayload[],
 ) {
+  const festConfig = await getFestConfig();
+  const scoringConfig = festConfig.scoring;
+
   if (program.section === "single") {
     const ids = winners.map((winner) => winner.id);
     const students = await StudentModel.find({ id: { $in: ids } }).lean();
@@ -61,6 +65,7 @@ async function buildEntries(
           program.category as "A" | "B" | "C" | "none",
           winner.position,
           grade,
+          scoringConfig,
         ),
       };
     });
@@ -83,6 +88,7 @@ async function buildEntries(
         "none",
         winner.position,
         "none",
+        scoringConfig,
       ),
     };
   });

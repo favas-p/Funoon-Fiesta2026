@@ -29,7 +29,16 @@ const adminNav: SidebarItem[] = [
       { href: "/admin/request-approvals", label: "Request Approvals" },
     ],
   },
-  { href: "/admin/settings", label: "Settings", icon: "settings" },
+  {
+    href: "/admin/settings",
+    label: "Settings",
+    icon: "settings",
+    children: [
+      { href: "/admin/settings?tab=rules", label: "Festival Rules & Points" },
+      { href: "/admin/settings?tab=backup", label: "Data & Backup" },
+      { href: "/admin/settings?tab=credentials", label: "Admin Credentials" },
+    ],
+  },
 ];
 
 async function logoutAction() {

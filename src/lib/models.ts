@@ -20,6 +20,7 @@ import type {
   FestoryPost,
   FestoryUser,
   FestoryComment,
+  FestConfig,
 } from "./types";
 
 // Force new schema in dev
@@ -45,6 +46,7 @@ if (process.env.NODE_ENV !== "production") {
   delete models.FestoryPost;
   delete models.FestoryComment;
   delete models.FestoryUser;
+  delete models.FestConfig;
 }
 
 const TeamSchema = new Schema<Team>(
@@ -444,4 +446,55 @@ export const FestoryCommentModel =
 export const FestoryUserModel =
   (models.FestoryUser as Model<FestoryUser>) ??
   model<FestoryUser>("FestoryUser", FestoryUserSchema);
+
+const FestConfigSchema = new Schema<FestConfig>(
+  {
+    id: { type: String, required: true, unique: true, default: "global" },
+    limits: {
+      maxSingleOnStage: { type: Number, default: 3 },
+      maxSingleOffStage: { type: Number, default: 4 },
+      maxGeneral: { type: Number, default: 3 },
+    },
+    scoring: {
+      enableCategories: { type: Boolean, default: true },
+      categoryScores: {
+        A: {
+          1: { type: Number, default: 10 },
+          2: { type: Number, default: 7 },
+          3: { type: Number, default: 5 },
+        },
+        B: {
+          1: { type: Number, default: 7 },
+          2: { type: Number, default: 5 },
+          3: { type: Number, default: 3 },
+        },
+        C: {
+          1: { type: Number, default: 5 },
+          2: { type: Number, default: 3 },
+          3: { type: Number, default: 1 },
+        },
+      },
+      gradeBonus: {
+        A: { type: Number, default: 5 },
+        B: { type: Number, default: 3 },
+        C: { type: Number, default: 1 },
+      },
+      generalScores: {
+        1: { type: Number, default: 20 },
+        2: { type: Number, default: 15 },
+        3: { type: Number, default: 10 },
+      },
+      flatSingleScores: {
+        1: { type: Number, default: 10 },
+        2: { type: Number, default: 7 },
+        3: { type: Number, default: 5 },
+      },
+    },
+  },
+  { timestamps: true },
+);
+
+export const FestConfigModel =
+  (models.FestConfig as Model<FestConfig>) ??
+  model<FestConfig>("FestConfig", FestConfigSchema);
 

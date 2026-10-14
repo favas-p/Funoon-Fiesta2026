@@ -1,13 +1,15 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { updateAdminCredentials } from "./actions";
 import { getDatabaseStats, restoreDatabase } from "./backup-actions";
+import { RulesConfigSection } from "./rules-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Upload, Database, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
+import { Download, Upload, Database, AlertTriangle, Loader2, KeyRound } from "lucide-react";
 import { toast } from "react-toastify";
 
 const initialState: { error?: string; success?: string } = {
@@ -76,17 +78,17 @@ function BackupRestoreSection() {
     return (
         <Card className="bg-white/5 border-white/10 text-white">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-sky-400">
                     <Database className="h-5 w-5" />
-                    Data Management
+                    Data Management & Backup
                 </CardTitle>
                 <CardDescription className="text-white/60">
-                    Backup and restore your entire database.
+                    Backup and restore your entire festival database.
                 </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 {/* Stats Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     {loading ? (
                         <div className="col-span-full flex justify-center py-4">
                             <Loader2 className="h-6 w-6 animate-spin text-white/50" />
@@ -106,8 +108,12 @@ function BackupRestoreSection() {
                                 <p className="text-xl font-bold">{stats.programs}</p>
                             </div>
                             <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                                <p className="text-xs text-fuchsia-300">Registrations</p>
+                                <p className="text-xl font-bold text-fuchsia-400">{stats.programRegistrations ?? 0}</p>
+                            </div>
+                            <div className="bg-white/5 p-3 rounded-lg border border-white/5">
                                 <p className="text-xs text-white/50">Results</p>
-                                <p className="text-xl font-bold">{stats.approvedResults + stats.pendingResults}</p>
+                                <p className="text-xl font-bold">{(stats.approvedResults ?? 0) + (stats.pendingResults ?? 0)}</p>
                             </div>
                         </>
                     ) : (
@@ -173,67 +179,115 @@ function BackupRestoreSection() {
     );
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
     const [state, action, isPending] = useActionState(updateAdminCredentials, initialState);
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const activeTab = searchParams.get("tab") || "rules";
+
+    const handleTabChange = (tab: string) => {
+        router.push(`/admin/settings?tab=${tab}`);
+    };
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Settings</h1>
+            {/* Header with Dropdown Selector */}
+            <div className="flex flex-wrap items-center justify-between gap-4 py-2 border-b border-white/10 pb-4">
+                <div>
+                    <h1 className="text-2xl font-bold tracking-tight text-white">Admin Settings & Configuration</h1>
+                    <p className="text-xs text-white/60 mt-1">Manage festival participation rules, scoring points, backup data, and security credentials.</p>
+                </div>
 
-            <BackupRestoreSection />
+                {/* Dropdown Selector for Admin Settings Sections */}
+                {/* <div className="flex items-center gap-3">
+                    <Label htmlFor="settings-dropdown" className="text-xs font-semibold uppercase tracking-wider text-white/70">
+                        Settings Dropdown:
+                    </Label>
+                    <select
+                        id="settings-dropdown"
+                        value={activeTab}
+                        onChange={(e) => handleTabChange(e.target.value)}
+                        className="bg-transparent border border-white/20 text-white rounded-xl px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-fuchsia-500 cursor-pointer"
+                    >
+                        <option value="rules" className="bg-slate-900 text-white">🎯 Festival Rules & Points</option>
+                        <option value="backup" className="bg-slate-900 text-white">💾 Data Management & Backup</option>
+                        <option value="credentials" className="bg-slate-900 text-white">🔐 Admin Credentials</option>
+                        <option value="all" className="bg-slate-900 text-white">⚙️ View All Sections</option>
+                    </select>
+                </div> */}
+            </div>
 
-            <Card className="bg-white/5 border-white/10 text-white">
-                <CardHeader>
-                    <CardTitle>Admin Credentials</CardTitle>
-                    <CardDescription className="text-white/60">
-                        Update your admin username and password.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form action={action} className="space-y-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="currentPassword">Current Password</Label>
-                            <Input
-                                id="currentPassword"
-                                name="currentPassword"
-                                type="password"
-                                placeholder="Enter current password"
-                                className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="username">New Username</Label>
-                            <Input
-                                id="username"
-                                name="username"
-                                placeholder="Enter new username"
-                                className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                            />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">New Password</Label>
-                            <Input
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder="Enter new password"
-                                className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                            />
-                        </div>
+            {/* SECTIONS BASED ON DROPDOWN SELECTION */}
+            {(activeTab === "rules" || activeTab === "all") && <RulesConfigSection />}
 
-                        {state?.error && (
-                            <p className="text-sm text-red-400">{state.error}</p>
-                        )}
-                        {state?.success && (
-                            <p className="text-sm text-green-400">{state.success}</p>
-                        )}
+            {(activeTab === "backup" || activeTab === "all") && <BackupRestoreSection />}
 
-                        <Button type="submit" disabled={isPending} className="w-full md:w-auto">
-                            {isPending ? "Updating..." : "Update Credentials"}
-                        </Button>
-                    </form>
-                </CardContent>
-            </Card>
-        </div>
+            {(activeTab === "credentials" || activeTab === "all") && (
+                <Card className="bg-white/5 border border-white/10 text-white">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-amber-400">
+                            <KeyRound className="h-5 w-5" />
+                            Admin Credentials
+                        </CardTitle>
+                        <CardDescription className="text-white/60">
+                            Update your admin username and password.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form action={action} className="space-y-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="currentPassword">Current Password</Label>
+                                <Input
+                                    id="currentPassword"
+                                    name="currentPassword"
+                                    type="password"
+                                    placeholder="Enter current password"
+                                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="username">New Username</Label>
+                                <Input
+                                    id="username"
+                                    name="username"
+                                    placeholder="Enter new username"
+                                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="password">New Password</Label>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    placeholder="Enter new password"
+                                    className="bg-white/5 border-white/10 text-white placeholder:text-white/40"
+                                />
+                            </div>
+
+                            {state?.error && (
+                                <p className="text-sm text-red-400">{state.error}</p>
+                            )}
+                            {state?.success && (
+                                <p className="text-sm text-green-400">{state.success}</p>
+                            )}
+
+                            <Button type="submit" disabled={isPending} className="w-full md:w-auto">
+                                {isPending ? "Updating..." : "Update Credentials"}
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            )
+            }
+        </div >
+    );
+}
+
+export default function SettingsPage() {
+    return (
+        <Suspense fallback={<div className="flex justify-center py-10"><Loader2 className="h-8 w-8 animate-spin text-white/50" /></div>}>
+            <SettingsContent />
+        </Suspense>
     );
 }
