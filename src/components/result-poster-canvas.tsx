@@ -1,13 +1,15 @@
 "use client";
 
-interface PrizeEntry {
+import type { PosterTemplate } from "@/lib/types";
+
+export interface PrizeEntry {
   position: 1 | 2 | 3;
   studentName?: string;
   teamName?: string;
   chestNumber?: string;
 }
 
-interface PosterData {
+export interface PosterData {
   programName: string;
   section?: string;
   category?: string;
@@ -41,103 +43,125 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 /**
- * Get gradient colors for different poster styles
+ * Fallback template builder if style number (1 | 2 | 3) is provided directly
  */
+function getLegacyDefaultTemplate(style: PosterStyle): PosterTemplate {
+  const is2 = style === 2;
+  const is3 = style === 3;
+
+  return {
+    id: `legacy-${style}`,
+    name: `Style ${style}`,
+    backgroundImageUrl: `/poster-template-${style}.webp`,
+    width: 1080,
+    height: 1350,
+    isActive: true,
+    order: style,
+    programName: {
+      enabled: true,
+      x: 380,
+      y: 400,
+      fontSize: 74,
+      fontFamily: "'Charutha', sans-serif",
+      fontWeight: "normal",
+      color: is2 ? "#ffffff" : is3 ? "#bd6229" : "#000000",
+      align: "center",
+      maxWidth: 940,
+    },
+    section: {
+      enabled: true,
+      x: 380,
+      y: 460,
+      fontSize: 48,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: is2 ? "#e7a039" : "#000000",
+      align: "center",
+      maxWidth: 940,
+    },
+    prizesLayout: "stacked",
+    stackedSettings: {
+      startX: 180,
+      startY: 608,
+      spacingY: 120,
+      nameFontSize: 48,
+      nameColor: is2 ? "#ffffff" : "#000000",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: is2 ? "#ffffff" : "#000000",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+      maxWidth: 720,
+    },
+    footer: {
+      enabled: true,
+      text: "Official Results",
+      x: 540,
+      y: 1290,
+      fontSize: 24,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "rgba(255, 255, 255, 0.5)",
+      align: "center",
+      maxWidth: 940,
+    },
+  };
+}
+
 /**
- * Get theme colors for different poster styles
+ * Truncate text to fit within a given maximum width on the canvas context
  */
-function getPosterTheme(style: PosterStyle) {
-  switch (style) {
-    case 1:
-      // Default purple gradient theme
-      return {
-        stops: [
-          { offset: 0, color: "#1e1b4b" }, // Deep purple
-          { offset: 0.3, color: "#312e81" }, // Indigo
-          { offset: 0.7, color: "#581c87" }, // Purple
-          { offset: 1, color: "#4c1d95" }, // Dark purple
-        ],
-        textColors: {
-          program: "#000000", // Dark purple
-          section: "#000000", // Purple
-          name: "#000000", // Deep purple
-          team: "#000000", // Violet
-        },
-      };
-    case 2:
-      // Blue gradient theme
-      return {
-        stops: [
-          { offset: 0, color: "#0f172a" }, // Slate
-          { offset: 0.3, color: "#1e3a8a" }, // Blue
-          { offset: 0.7, color: "#3b82f6" }, // Light blue
-          { offset: 1, color: "#1e40af" }, // Dark blue
-        ],
-        textColors: {
-          program: "#fffff", // Dark blue
-          section: "#e7a039", // Blue
-          name: "#ffffff", // Slate
-          team: "#ffffff", // Darker blue
-        },
-      };
-    case 3:
-      // Emerald/Teal gradient theme
-      return {
-        stops: [
-          { offset: 0, color: "#064e3b" }, // Dark emerald
-          { offset: 0.3, color: "#065f46" }, // Emerald
-          { offset: 0.7, color: "#059669" }, // Light emerald
-          { offset: 1, color: "#047857" }, // Dark emerald
-        ],
-        textColors: {
-          program: "#bd6229", // Dark emerald
-          section: "#000000", // Emerald
-          name: "#000000", // Very dark emerald
-          team: "#000000", // Dark emerald
-        },
-      };
-    default:
-      return {
-        stops: [
-          { offset: 0, color: "#1e1b4b" },
-          { offset: 0.3, color: "#312e81" },
-          { offset: 0.7, color: "#581c87" },
-          { offset: 1, color: "#4c1d95" },
-        ],
-        textColors: {
-          program: "#bd6229",
-          section: "#6d28d9",
-          name: "#1e1b4b",
-          team: "#5b21b6",
-        },
-      };
+function truncateText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number
+): string {
+  if (ctx.measureText(text).width <= maxWidth) {
+    return text;
   }
+  let truncated = text;
+  while (ctx.measureText(truncated + "...").width > maxWidth && truncated.length > 0) {
+    truncated = truncated.slice(0, -1);
+  }
+  return truncated + "...";
 }
 
 /**
  * Generate a high-quality poster canvas image for the result
- * @param data Poster data
- * @param style Poster style variant (1, 2, or 3)
+ * @param data Poster data (program, section, prizes)
+ * @param styleOrTemplate Poster style variant (1, 2, 3) or full dynamic PosterTemplate
  * @returns Promise that resolves to Data URL of the generated PNG image
  */
-export async function generateResultPoster(data: PosterData, style: PosterStyle = 1): Promise<string> {
-  // 1. Load poster template background first to get its dimensions
-  const theme = getPosterTheme(style);
-  const templateUrl = `/poster-template-${style}.webp`;
+export async function generateResultPoster(
+  data: PosterData,
+  styleOrTemplate: PosterStyle | PosterTemplate = 1
+): Promise<string> {
+  const template: PosterTemplate =
+    typeof styleOrTemplate === "number"
+      ? getLegacyDefaultTemplate(styleOrTemplate)
+      : styleOrTemplate;
 
+  const baseWidth = template.width || 1080;
+  const baseHeight = template.height || 1350;
+
+  // 1. Attempt to load template background image
   let templateImage: HTMLImageElement | null = null;
-  let imageWidth = 1080; // Default fallback width
-  let imageHeight = 1350; // Default fallback height
+  let imageWidth = baseWidth;
+  let imageHeight = baseHeight;
 
-  try {
-    templateImage = await loadImage(templateUrl);
-    imageWidth = templateImage.width;
-    imageHeight = templateImage.height;
-  } catch (error) {
-    console.warn("Failed to load poster template, using fallback dimensions:", error);
+  if (template.backgroundImageUrl) {
+    try {
+      templateImage = await loadImage(template.backgroundImageUrl);
+      imageWidth = templateImage.width;
+      imageHeight = templateImage.height;
+    } catch (error) {
+      console.warn("Failed to load poster template background image, using fallback:", error);
+    }
   }
 
-  // Create canvas with exact image dimensions
+  // Create canvas with exact dimensions
   const canvas = document.createElement("canvas");
   canvas.width = imageWidth;
   canvas.height = imageHeight;
@@ -151,135 +175,178 @@ export async function generateResultPoster(data: PosterData, style: PosterStyle 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
 
-  // Draw poster template background
+  // 2. Draw background
   if (templateImage) {
-    // Draw the template image at its natural size
     ctx.drawImage(templateImage, 0, 0, imageWidth, imageHeight);
   } else {
-    // Fallback to gradient background if image fails to load
+    // Elegant fallback gradient if image is missing
     const gradient = ctx.createLinearGradient(0, 0, imageWidth, imageHeight);
-    theme.stops.forEach((stop) => {
-      gradient.addColorStop(stop.offset, stop.color);
-    });
+    gradient.addColorStop(0, "#1e1b4b");
+    gradient.addColorStop(0.5, "#312e81");
+    gradient.addColorStop(1, "#4c1d95");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, imageWidth, imageHeight);
   }
 
-  // Calculate scale factors based on original 1080x1350 dimensions
-  const scaleX = imageWidth / 1080;
-  const scaleY = imageHeight / 1350;
+  // Scale factors based on base template dimensions
+  const scaleX = imageWidth / baseWidth;
+  const scaleY = imageHeight / baseHeight;
 
-  // 3. Title Section - Program Name
-  ctx.fillStyle = "#ffffff";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+  // 3. Program Name
+  if (template.programName && template.programName.enabled !== false) {
+    const pConfig = template.programName;
+    const posX = pConfig.x * scaleX;
+    const posY = pConfig.y * scaleY;
+    const fontSize = pConfig.fontSize * scaleY;
 
-  // Program Name - scaled font size
-  const titleY = 400 * scaleY;
-  const fontSize = 74 * scaleY;
-  ctx.fillStyle = theme.textColors.program;
-  ctx.font = `${fontSize}px 'Charutha', sans-serif`;
-  // Truncate long program names if needed
-  let displayProgramName = data.programName;
-  const maxTitleWidth = 940 * scaleX;
-  let metrics = ctx.measureText(displayProgramName);
-  if (metrics.width > maxTitleWidth) {
-    // Truncate with ellipsis if too long
-    while (ctx.measureText(displayProgramName + "...").width > maxTitleWidth && displayProgramName.length > 0) {
-      displayProgramName = displayProgramName.slice(0, -1);
-    }
-    displayProgramName = displayProgramName + "...";
+    ctx.fillStyle = pConfig.color || "#000000";
+    ctx.textAlign = pConfig.align || "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${pConfig.fontWeight || "normal"} ${fontSize}px ${pConfig.fontFamily || "sans-serif"}`;
+
+    const maxWidth = (pConfig.maxWidth || 940) * scaleX;
+    const displayProgram = truncateText(ctx, data.programName || "Program Name", maxWidth);
+    ctx.fillText(displayProgram, posX, posY);
   }
-  const leftMargin = 380 * scaleX;
-  ctx.fillText(displayProgramName, leftMargin, titleY);
 
-  // 4. Section - smaller than program name, normal style
-  const sectionY = 460 * scaleY; // Decreased gap from ProgramName
-  ctx.fillStyle = theme.textColors.section;
-  const sectionFontSize = 48 * scaleY;
-  ctx.font = `${sectionFontSize}px 'Arial', sans-serif`; // Normal style, smaller than program name
-  // Truncate long section names if needed
-  let displaySection = data.section || "General";
-  const maxSectionWidth = 940 * scaleX;
-  metrics = ctx.measureText(displaySection);
-  if (metrics.width > maxSectionWidth) {
-    // Truncate with ellipsis if too long
-    while (ctx.measureText(displaySection + "...").width > maxSectionWidth && displaySection.length > 0) {
-      displaySection = displaySection.slice(0, -1);
-    }
-    displaySection = displaySection + "...";
+  // 4. Section / Category
+  if (template.section && template.section.enabled !== false) {
+    const sConfig = template.section;
+    const posX = sConfig.x * scaleX;
+    const posY = sConfig.y * scaleY;
+    const fontSize = sConfig.fontSize * scaleY;
+
+    ctx.fillStyle = sConfig.color || "#000000";
+    ctx.textAlign = sConfig.align || "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${sConfig.fontWeight || "normal"} ${fontSize}px ${sConfig.fontFamily || "sans-serif"}`;
+
+    const sectionLabel = data.section
+      ? data.category && data.category !== "none"
+        ? `${data.section} • Cat ${data.category}`
+        : data.section
+      : "General";
+
+    const maxWidth = (sConfig.maxWidth || 940) * scaleX;
+    const displaySection = truncateText(ctx, sectionLabel, maxWidth);
+    ctx.fillText(displaySection, posX, posY);
   }
-  ctx.fillText(displaySection, leftMargin, sectionY);
 
-  // 5. Prize Sections
-  const currentY = 558 * scaleY;
-  const prizeSpacing = 120 * scaleY;
-  const sectionWidth = 800 * scaleX;
-  const sectionX = (imageWidth - sectionWidth) / 2;
-
-  // Sort prizes by position
+  // 5. Prizes Section
   const sortedPrizes = [...data.prizes].sort((a, b) => a.position - b.position);
 
-  sortedPrizes.forEach((prize, index) => {
-    const positionY = currentY + index * prizeSpacing;
+  if (template.prizesLayout === "slots" && template.slotsSettings) {
+    // Custom individual position slots
+    const slots = template.slotsSettings;
+    const slotMap: Record<number, typeof slots.slot1> = {
+      1: slots.slot1,
+      2: slots.slot2,
+      3: slots.slot3,
+    };
 
-    // Student/Team Name
-    const name = prize.studentName || prize.teamName || "—";
-    ctx.fillStyle = theme.textColors.name;
-    const nameFontSize = 48 * scaleY;
-    ctx.font = `bold ${nameFontSize}px 'Arial', sans-serif`;
-    ctx.textAlign = "left";
+    sortedPrizes.forEach((prize) => {
+      const slot = slotMap[prize.position];
+      if (!slot) return;
 
-    const nameStartX = sectionX + 40 * scaleX;
-    const nameY = positionY + 50 * scaleY;
-    const teamNameY = nameY + 50 * scaleY; // Team name Y position
+      const name = prize.studentName || prize.teamName || "—";
+      const posX = slot.x * scaleX;
+      const posY = slot.y * scaleY;
+      const teamY = posY + (slots.teamOffsetY || 50) * scaleY;
 
-    // Truncate long names to fit
-    const maxNameWidth = sectionWidth - 80 * scaleX;
-    let displayName = name;
-    const metrics = ctx.measureText(displayName);
-    if (metrics.width > maxNameWidth) {
-      // Truncate with ellipsis
-      while (ctx.measureText(displayName + "...").width > maxNameWidth && displayName.length > 0) {
-        displayName = displayName.slice(0, -1);
+      // Draw winner name
+      const nameFontSize = (slots.nameFontSize || 48) * scaleY;
+      ctx.fillStyle = slots.nameColor || "#000000";
+      ctx.textAlign = slots.align || "left";
+      ctx.textBaseline = "middle";
+      ctx.font = `bold ${nameFontSize}px ${slots.nameFontFamily || "'Arial', sans-serif"}`;
+
+      let displayName = name;
+      if (slot.showChestNo && prize.chestNumber) {
+        displayName += ` (#${prize.chestNumber})`;
       }
-      displayName = displayName + "...";
-    }
+      ctx.fillText(displayName, posX, posY);
 
-    // Draw student/team name
-    ctx.font = `bold ${nameFontSize}px 'Arial', sans-serif`;
-    ctx.fillText(displayName, nameStartX, nameY);
+      // Draw team name
+      if (prize.teamName && prize.studentName) {
+        const teamFontSize = (slots.teamFontSize || 32) * scaleY;
+        ctx.fillStyle = slots.teamColor || "#555555";
+        ctx.font = `${teamFontSize}px ${slots.teamFontFamily || "'Arial', sans-serif"}`;
+        ctx.fillText(prize.teamName, posX, teamY);
+      }
+    });
+  } else {
+    // Default Stacked List layout
+    const stacked = template.stackedSettings || {
+      startX: 180,
+      startY: 608,
+      spacingY: 120,
+      nameFontSize: 48,
+      nameColor: "#000000",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#000000",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+      maxWidth: 720,
+    };
 
-    // Team Name (if student) - smaller font
-    if (prize.studentName && prize.teamName) {
-      ctx.fillStyle = theme.textColors.team;
-      const teamFontSize = 32 * scaleY;
-      ctx.font = `${teamFontSize}px 'Arial', sans-serif`;
-      ctx.fillText(prize.teamName, nameStartX, teamNameY);
-    } else if (!prize.studentName && prize.teamName) {
-      // Show team name even when no student (group/general sections)
-      ctx.fillStyle = theme.textColors.team;
-      const teamFontSize = 32 * scaleY;
-      ctx.font = `${teamFontSize}px 'Arial', sans-serif`;
-      ctx.fillText(prize.teamName, nameStartX, teamNameY);
-    }
-  });
+    sortedPrizes.forEach((prize, index) => {
+      const name = prize.studentName || prize.teamName || "—";
+      const nameX = stacked.startX * scaleX;
+      const nameY = (stacked.startY + index * stacked.spacingY) * scaleY;
+      const teamY = nameY + (stacked.teamOffsetY || 50) * scaleY;
 
-  // 6. Footer decoration
-  const footerY = 1250 * scaleY;
-  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-  const footerFontSize = 24 * scaleY;
-  ctx.font = `${footerFontSize}px 'Arial', sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText("Official Results", imageWidth / 2, footerY + 40 * scaleY);
+      // Draw student / winner name
+      const nameFontSize = (stacked.nameFontSize || 48) * scaleY;
+      ctx.fillStyle = stacked.nameColor || "#000000";
+      ctx.textAlign = stacked.align || "left";
+      ctx.textBaseline = "middle";
+      ctx.font = `bold ${nameFontSize}px ${stacked.nameFontFamily || "'Arial', sans-serif"}`;
 
-  // 7. Add shadow effect around the poster
-  ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-  ctx.shadowBlur = 40;
+      const maxNameWidth = (stacked.maxWidth || 720) * scaleX;
+      let displayName = name;
+      if (stacked.showChestNo && prize.chestNumber) {
+        displayName += ` (#${prize.chestNumber})`;
+      }
+      displayName = truncateText(ctx, displayName, maxNameWidth);
+      ctx.fillText(displayName, nameX, nameY);
+
+      // Draw team name if available
+      const team = prize.teamName;
+      if (team && (prize.studentName || prize.teamName)) {
+        const teamFontSize = (stacked.teamFontSize || 32) * scaleY;
+        ctx.fillStyle = stacked.teamColor || "#555555";
+        ctx.font = `${teamFontSize}px ${stacked.teamFontFamily || "'Arial', sans-serif"}`;
+        const displayTeam = truncateText(ctx, team, maxNameWidth);
+        ctx.fillText(displayTeam, nameX, teamY);
+      }
+    });
+  }
+
+  // 6. Footer Decoration / Branding
+  if (template.footer && template.footer.enabled !== false) {
+    const fConfig = template.footer;
+    const posX = fConfig.x * scaleX;
+    const posY = fConfig.y * scaleY;
+    const fontSize = fConfig.fontSize * scaleY;
+
+    ctx.fillStyle = fConfig.color || "rgba(255, 255, 255, 0.5)";
+    ctx.textAlign = fConfig.align || "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `${fConfig.fontWeight || "normal"} ${fontSize}px ${fConfig.fontFamily || "sans-serif"}`;
+
+    const maxFooterWidth = (fConfig.maxWidth || 940) * scaleX;
+    const text = truncateText(ctx, fConfig.text || "Official Results", maxFooterWidth);
+    ctx.fillText(text, posX, posY);
+  }
+
+  // 7. Add subtle shadow depth
+  ctx.shadowColor = "rgba(0, 0, 0, 0.4)";
+  ctx.shadowBlur = 30;
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 10;
 
-  // Convert to data URL
   return canvas.toDataURL("image/png", 1.0);
 }
-

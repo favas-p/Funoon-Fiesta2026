@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateResultPoster, type PosterStyle } from "./result-poster-canvas";
-import type { ResultRecord, Program, Student, Team } from "@/lib/types";
+import type { ResultRecord, Program, Student, Team, PosterTemplate } from "@/lib/types";
 
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ interface ResultPosterShareButtonProps {
   program: Program;
   studentMap: Map<string, Student>;
   teamMap: Map<string, Team>;
+  template?: PosterTemplate;
   style?: PosterStyle;
   variant?: "default" | "secondary" | "ghost" | "outline";
   size?: "default" | "sm" | "lg" | "icon";
@@ -24,6 +25,7 @@ export function ResultPosterShareButton({
   program,
   studentMap,
   teamMap,
+  template,
   style = 1,
   variant = "default",
   size = "default",
@@ -83,7 +85,7 @@ export function ResultPosterShareButton({
       };
 
       // Generate the poster image
-      const imgData = await generateResultPoster(posterData, style);
+      const imgData = await generateResultPoster(posterData, template || style);
 
       // Create caption
       const caption = `Funoon Fiesta 2k25-26\n\n${program.name} result\n\nVisit our website funoonfiesta.noorululama.org`;

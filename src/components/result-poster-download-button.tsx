@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateResultPoster, type PosterStyle } from "./result-poster-canvas";
-import type { ResultRecord, Program, Student, Team } from "@/lib/types";
+import type { ResultRecord, Program, Student, Team, PosterTemplate } from "@/lib/types";
 
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ interface ResultPosterDownloadButtonProps {
   program: Program;
   studentMap: Map<string, Student>;
   teamMap: Map<string, Team>;
+  template?: PosterTemplate;
   style?: PosterStyle;
   variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
   size?: "default" | "sm" | "lg" | "icon";
@@ -24,6 +25,7 @@ export function ResultPosterDownloadButton({
   program,
   studentMap,
   teamMap,
+  template,
   style = 1,
   variant = "default",
   size = "default",
@@ -70,12 +72,13 @@ export function ResultPosterDownloadButton({
       };
 
       // Generate the poster image (now async)
-      const imgData = await generateResultPoster(posterData, style);
+      const imgData = await generateResultPoster(posterData, template || style);
 
       // Create download link
       const link = document.createElement("a");
       const sanitizedProgramName = program.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-      link.download = `${sanitizedProgramName}-result-style-${style}.png`;
+      const templateSuffix = template?.name ? template.name.replace(/[^a-z0-9]/gi, "_").toLowerCase() : `style-${style}`;
+      link.download = `${sanitizedProgramName}-result-${templateSuffix}.png`;
       link.href = imgData;
 
       // Trigger download

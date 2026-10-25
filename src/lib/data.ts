@@ -11,6 +11,7 @@ import type {
   Student,
   Team,
   FestConfig,
+  PosterTemplate,
 } from "./types";
 import { connectDB } from "./db";
 import {
@@ -23,6 +24,7 @@ import {
   StudentModel,
   TeamModel,
   FestConfigModel,
+  PosterTemplateModel,
 } from "./models";
 
 let seedPromise: Promise<void> | null = null;
@@ -52,7 +54,7 @@ async function updateTeamNames() {
 async function seedDatabase() {
   await connectDB();
 
-  const [teamCount, studentCount, programCount, juryCount, liveScoreCount, assignmentCount] =
+  const [teamCount, studentCount, programCount, juryCount, liveScoreCount, assignmentCount, templateCount] =
     await Promise.all([
       TeamModel.countDocuments(),
       StudentModel.countDocuments(),
@@ -60,6 +62,7 @@ async function seedDatabase() {
       JuryModel.countDocuments(),
       LiveScoreModel.countDocuments(),
       AssignedProgramModel.countDocuments(),
+      PosterTemplateModel.countDocuments(),
     ]);
 
   // Always update team names to ensure they match the current defaults
@@ -106,6 +109,10 @@ async function seedDatabase() {
 
   await seedCollection(assignmentCount, async () => {
     await AssignedProgramModel.insertMany(defaultAssignments);
+  });
+
+  await seedCollection(templateCount, async () => {
+    await PosterTemplateModel.insertMany(defaultPosterTemplates);
   });
 }
 
@@ -616,7 +623,7 @@ export async function resetLiveScores() {
 
 const defaultTeams: Team[] = [
   {
-    id: "team-cosmos",
+    id: "team-bustan",
     name: "BUSTAN",
     leader: "Mira Lopes",
     leader_photo: "https://images.unsplash.com/photo-1544723795-3fb6469f5b39",
@@ -627,7 +634,7 @@ const defaultTeams: Team[] = [
     portal_password: "cosmos@123",
   },
   {
-    id: "team-dynamo",
+    id: "team-dastan",
     name: "DASTAN",
     leader: "Ritvik Sen",
     leader_photo: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518",
@@ -638,7 +645,7 @@ const defaultTeams: Team[] = [
     portal_password: "dynamo@123",
   },
   {
-    id: "team-blaze",
+    id: "team-diwan",
     name: "DIWAN",
     leader: "Kabir Varma",
     leader_photo: "https://images.unsplash.com/photo-1504593811423-6dd665756598",
@@ -649,7 +656,7 @@ const defaultTeams: Team[] = [
     portal_password: "blaze@123",
   },
   {
-    id: "team-ember",
+    id: "team-gulistan",
     name: "GULISTAN",
     leader: "Salma Aziz & Ahmed Hassan",
     leader_photo: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
@@ -660,7 +667,7 @@ const defaultTeams: Team[] = [
     portal_password: "ember@123",
   },
   {
-    id: "team-aurora",
+    id: "team-kharistan",
     name: "KHARISTAN",
     leader: "Anaya Joseph",
     leader_photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
@@ -671,7 +678,7 @@ const defaultTeams: Team[] = [
     portal_password: "aurora@123",
   },
   {
-    id: "team-flux",
+    id: "team-rayhan",
     name: "RAYHAN",
     leader: "Levi D'Souza",
     leader_photo: "https://images.unsplash.com/photo-1546456073-92b9f0a8d1d6",
@@ -796,3 +803,275 @@ const defaultJury: Jury[] = [
   { id: "jury-dev", name: "Dev Jain", password: "dev@jury", avatar: "/img/jury1.webp" },
   { id: "jury-sahana", name: "Sahana Biju", password: "sahana@jury", avatar: "/img/jury2.webp" },
 ];
+
+export const defaultPosterTemplates: PosterTemplate[] = [
+  {
+    id: "poster-template-1",
+    name: "Royal Purple",
+    backgroundImageUrl: "/poster-template-1.webp",
+    width: 1080,
+    height: 1350,
+    isActive: true,
+    order: 1,
+    programName: {
+      enabled: true,
+      x: 380,
+      y: 400,
+      fontSize: 74,
+      fontFamily: "'Charutha', sans-serif",
+      fontWeight: "normal",
+      color: "#000000",
+      align: "center",
+      maxWidth: 940,
+    },
+    section: {
+      enabled: true,
+      x: 380,
+      y: 460,
+      fontSize: 48,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "#000000",
+      align: "center",
+      maxWidth: 940,
+    },
+    prizesLayout: "stacked",
+    stackedSettings: {
+      startX: 180,
+      startY: 608,
+      spacingY: 120,
+      nameFontSize: 48,
+      nameColor: "#000000",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#000000",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+      maxWidth: 720,
+    },
+    slotsSettings: {
+      slot1: { x: 180, y: 608, showChestNo: false },
+      slot2: { x: 180, y: 728, showChestNo: false },
+      slot3: { x: 180, y: 848, showChestNo: false },
+      nameFontSize: 48,
+      nameColor: "#000000",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#000000",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+    },
+    footer: {
+      enabled: true,
+      text: "Official Results",
+      x: 540,
+      y: 1290,
+      fontSize: 24,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "rgba(255, 255, 255, 0.5)",
+      align: "center",
+      maxWidth: 940,
+    },
+  },
+  {
+    id: "poster-template-2",
+    name: "Midnight Blue",
+    backgroundImageUrl: "/poster-template-2.webp",
+    width: 1080,
+    height: 1350,
+    isActive: true,
+    order: 2,
+    programName: {
+      enabled: true,
+      x: 380,
+      y: 400,
+      fontSize: 74,
+      fontFamily: "'Charutha', sans-serif",
+      fontWeight: "normal",
+      color: "#ffffff",
+      align: "center",
+      maxWidth: 940,
+    },
+    section: {
+      enabled: true,
+      x: 380,
+      y: 460,
+      fontSize: 48,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "#e7a039",
+      align: "center",
+      maxWidth: 940,
+    },
+    prizesLayout: "stacked",
+    stackedSettings: {
+      startX: 180,
+      startY: 608,
+      spacingY: 120,
+      nameFontSize: 48,
+      nameColor: "#ffffff",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#ffffff",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+      maxWidth: 720,
+    },
+    slotsSettings: {
+      slot1: { x: 180, y: 608, showChestNo: false },
+      slot2: { x: 180, y: 728, showChestNo: false },
+      slot3: { x: 180, y: 848, showChestNo: false },
+      nameFontSize: 48,
+      nameColor: "#ffffff",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#ffffff",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+    },
+    footer: {
+      enabled: true,
+      text: "Official Results",
+      x: 540,
+      y: 1290,
+      fontSize: 24,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "rgba(255, 255, 255, 0.5)",
+      align: "center",
+      maxWidth: 940,
+    },
+  },
+  {
+    id: "poster-template-3",
+    name: "Emerald Green",
+    backgroundImageUrl: "/poster-template-3.webp",
+    width: 1080,
+    height: 1350,
+    isActive: true,
+    order: 3,
+    programName: {
+      enabled: true,
+      x: 380,
+      y: 400,
+      fontSize: 74,
+      fontFamily: "'Charutha', sans-serif",
+      fontWeight: "normal",
+      color: "#bd6229",
+      align: "center",
+      maxWidth: 940,
+    },
+    section: {
+      enabled: true,
+      x: 380,
+      y: 460,
+      fontSize: 48,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "#000000",
+      align: "center",
+      maxWidth: 940,
+    },
+    prizesLayout: "stacked",
+    stackedSettings: {
+      startX: 180,
+      startY: 608,
+      spacingY: 120,
+      nameFontSize: 48,
+      nameColor: "#000000",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#000000",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+      maxWidth: 720,
+    },
+    slotsSettings: {
+      slot1: { x: 180, y: 608, showChestNo: false },
+      slot2: { x: 180, y: 728, showChestNo: false },
+      slot3: { x: 180, y: 848, showChestNo: false },
+      nameFontSize: 48,
+      nameColor: "#000000",
+      nameFontFamily: "'Arial', sans-serif",
+      teamFontSize: 32,
+      teamColor: "#000000",
+      teamFontFamily: "'Arial', sans-serif",
+      teamOffsetY: 50,
+      showChestNo: false,
+      align: "left",
+    },
+    footer: {
+      enabled: true,
+      text: "Official Results",
+      x: 540,
+      y: 1290,
+      fontSize: 24,
+      fontFamily: "'Arial', sans-serif",
+      fontWeight: "normal",
+      color: "rgba(255, 255, 255, 0.5)",
+      align: "center",
+      maxWidth: 940,
+    },
+  },
+];
+
+export async function getPosterTemplates(): Promise<PosterTemplate[]> {
+  await ensureSeedData();
+  const templates = await PosterTemplateModel.find().sort({ order: 1 }).lean<PosterTemplate[]>();
+  return normalize(templates);
+}
+
+export async function getActivePosterTemplates(): Promise<PosterTemplate[]> {
+  await ensureSeedData();
+  const templates = await PosterTemplateModel.find({ isActive: true }).sort({ order: 1 }).lean<PosterTemplate[]>();
+  return normalize(templates);
+}
+
+export async function getPosterTemplateById(id: string): Promise<PosterTemplate | null> {
+  await ensureSeedData();
+  const template = await PosterTemplateModel.findOne({ id }).lean<PosterTemplate>();
+  return template ? normalize([template])[0] : null;
+}
+
+export async function createPosterTemplate(
+  templateData: Omit<PosterTemplate, "id">
+): Promise<PosterTemplate> {
+  await connectDB();
+  const id = `template-${randomUUID()}`;
+  const newTemplate = await PosterTemplateModel.create({
+    ...templateData,
+    id,
+  });
+  return normalize([newTemplate.toObject()])[0];
+}
+
+export async function updatePosterTemplate(
+  id: string,
+  updates: Partial<PosterTemplate>
+): Promise<PosterTemplate | null> {
+  await connectDB();
+  const updated = await PosterTemplateModel.findOneAndUpdate(
+    { id },
+    { $set: updates },
+    { new: true }
+  ).lean<PosterTemplate>();
+  return updated ? normalize([updated])[0] : null;
+}
+
+export async function deletePosterTemplate(id: string): Promise<boolean> {
+  await connectDB();
+  const res = await PosterTemplateModel.deleteOne({ id });
+  return res.deletedCount > 0;
+}
+

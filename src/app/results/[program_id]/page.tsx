@@ -9,6 +9,7 @@ import {
   getPrograms,
   getStudents,
   getTeams,
+  getActivePosterTemplates,
 } from "@/lib/data";
 import { formatNumber, cn } from "@/lib/utils";
 import { ResultPosterPreview } from "@/components/result-poster-preview";
@@ -18,12 +19,13 @@ interface ProgramDetailPageProps {
 }
 
 async function getProgramDetail(programId: string) {
-  const [results, programs, students, teams, juries] = await Promise.all([
+  const [results, programs, students, teams, juries, templates] = await Promise.all([
     getApprovedResults(),
     getPrograms(),
     getStudents(),
     getTeams(),
     getJuries(),
+    getActivePosterTemplates(),
   ]);
 
   const program = programs.find((p) => p.id === programId);
@@ -41,6 +43,7 @@ async function getProgramDetail(programId: string) {
     studentMap,
     teamMap,
     juryMap,
+    templates,
   };
 }
 
@@ -255,6 +258,7 @@ export default async function ProgramDetailPage({ params }: ProgramDetailPagePro
               program={data.program}
               students={Array.from(data.studentMap.values())}
               teams={Array.from(data.teamMap.values())}
+              templates={data.templates}
             />
           </Card>
 

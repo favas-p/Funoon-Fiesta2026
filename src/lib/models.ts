@@ -21,6 +21,7 @@ import type {
   FestoryUser,
   FestoryComment,
   FestConfig,
+  PosterTemplate,
 } from "./types";
 
 // Force new schema in dev
@@ -47,6 +48,7 @@ if (process.env.NODE_ENV !== "production") {
   delete models.FestoryComment;
   delete models.FestoryUser;
   delete models.FestConfig;
+  delete models.PosterTemplate;
 }
 
 const TeamSchema = new Schema<Team>(
@@ -497,4 +499,90 @@ const FestConfigSchema = new Schema<FestConfig>(
 export const FestConfigModel =
   (models.FestConfig as Model<FestConfig>) ??
   model<FestConfig>("FestConfig", FestConfigSchema);
+
+const TextOverlaySchema = new Schema(
+  {
+    enabled: { type: Boolean, default: true },
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    fontSize: { type: Number, required: true },
+    fontFamily: { type: String, default: "Arial, sans-serif" },
+    fontWeight: { type: String, default: "normal" },
+    color: { type: String, default: "#000000" },
+    align: { type: String, enum: ["left", "center", "right"], default: "left" },
+    maxWidth: { type: Number, default: 940 },
+  },
+  { _id: false },
+);
+
+const PositionSlotSchema = new Schema(
+  {
+    x: { type: Number, required: true },
+    y: { type: Number, required: true },
+    showChestNo: { type: Boolean, default: false },
+  },
+  { _id: false },
+);
+
+const PosterTemplateSchema = new Schema<PosterTemplate>(
+  {
+    id: { type: String, required: true, unique: true },
+    name: { type: String, required: true },
+    backgroundImageUrl: { type: String, required: true },
+    width: { type: Number, default: 1080 },
+    height: { type: Number, default: 1350 },
+    isActive: { type: Boolean, default: true },
+    order: { type: Number, default: 0 },
+    programName: { type: TextOverlaySchema, required: true },
+    section: { type: TextOverlaySchema, required: true },
+    prizesLayout: { type: String, enum: ["stacked", "slots"], default: "stacked" },
+    stackedSettings: {
+      startX: { type: Number, default: 180 },
+      startY: { type: Number, default: 608 },
+      spacingY: { type: Number, default: 120 },
+      nameFontSize: { type: Number, default: 48 },
+      nameColor: { type: String, default: "#000000" },
+      nameFontFamily: { type: String, default: "Arial, sans-serif" },
+      teamFontSize: { type: Number, default: 32 },
+      teamColor: { type: String, default: "#000000" },
+      teamFontFamily: { type: String, default: "Arial, sans-serif" },
+      teamOffsetY: { type: Number, default: 50 },
+      showChestNo: { type: Boolean, default: false },
+      chestNoColor: { type: String, default: "#666666" },
+      align: { type: String, enum: ["left", "center", "right"], default: "left" },
+      maxWidth: { type: Number, default: 720 },
+    },
+    slotsSettings: {
+      slot1: { type: PositionSlotSchema, default: { x: 180, y: 608 } },
+      slot2: { type: PositionSlotSchema, default: { x: 180, y: 728 } },
+      slot3: { type: PositionSlotSchema, default: { x: 180, y: 848 } },
+      nameFontSize: { type: Number, default: 48 },
+      nameColor: { type: String, default: "#000000" },
+      nameFontFamily: { type: String, default: "Arial, sans-serif" },
+      teamFontSize: { type: Number, default: 32 },
+      teamColor: { type: String, default: "#000000" },
+      teamFontFamily: { type: String, default: "Arial, sans-serif" },
+      teamOffsetY: { type: Number, default: 50 },
+      showChestNo: { type: Boolean, default: false },
+      align: { type: String, enum: ["left", "center", "right"], default: "left" },
+    },
+    footer: {
+      enabled: { type: Boolean, default: true },
+      text: { type: String, default: "Official Results" },
+      x: { type: Number, default: 540 },
+      y: { type: Number, default: 1290 },
+      fontSize: { type: Number, default: 24 },
+      fontFamily: { type: String, default: "Arial, sans-serif" },
+      fontWeight: { type: String, default: "normal" },
+      color: { type: String, default: "rgba(255, 255, 255, 0.5)" },
+      align: { type: String, enum: ["left", "center", "right"], default: "center" },
+      maxWidth: { type: Number, default: 940 },
+    },
+  },
+  { timestamps: true },
+);
+
+export const PosterTemplateModel =
+  (models.PosterTemplate as Model<PosterTemplate>) ??
+  model<PosterTemplate>("PosterTemplate", PosterTemplateSchema);
 

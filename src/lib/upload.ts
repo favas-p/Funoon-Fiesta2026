@@ -38,3 +38,44 @@ export async function deleteFile(fileUrl: string) {
         console.error("Failed to delete file:", error);
     }
 }
+
+const POSTER_TEMPLATE_DIR = path.join(process.cwd(), "public", "uploads", "poster-templates");
+
+export async function uploadPosterTemplateImage(
+    file: File
+): Promise<{ url: string; width: number; height: number }> {
+    await mkdir(POSTER_TEMPLATE_DIR, { recursive: true });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const filename = `${randomUUID()}.webp`;
+    const filepath = path.join(POSTER_TEMPLATE_DIR, filename);
+
+    // Read natural metadata
+    const image = sharp(buffer);
+    const metadata = await image.metadata();
+    const width = metadata.width || 1080;
+    const height = metadata.height || 1350;
+
+    // Convert to webp with high quality for clear poster rendering
+    await image
+        .webp({ quality: 92 })
+        .toFile(filepath);
+
+    return {
+        url: `/uploads/poster-templates/${filename}`,
+        width,
+        height,
+    };
+}
+
+export async function deletePosterTemplateFile(fileUrl: string) {
+    try {
+        if (!fileUrl.startsWith("/uploads/poster-templates/")) return;
+        const filename = fileUrl.split("/").pop();
+        if (!filename) return;
+        const filepath = path.join(POSTER_TEMPLATE_DIR, filename);
+        await unlink(filepath);
+    } catch (error) {
+        console.error("Failed to delete poster template file:", error);
+    }
+}

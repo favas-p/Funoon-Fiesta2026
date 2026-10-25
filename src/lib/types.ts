@@ -285,3 +285,67 @@ export interface FestConfig {
   };
 }
 
+export interface TextOverlayConfig {
+  enabled?: boolean;
+  x: number;
+  y: number;
+  fontSize: number;
+  fontFamily: string;
+  fontWeight?: "normal" | "bold" | "600" | "700";
+  color: string;
+  align: "left" | "center" | "right";
+  maxWidth?: number;
+}
+
+export interface PositionSlotConfig {
+  x: number;
+  y: number;
+  showChestNo?: boolean;
+}
+
+export interface PosterTemplate {
+  id: string;
+  name: string;
+  backgroundImageUrl: string;
+  width: number;
+  height: number;
+  isActive: boolean;
+  order: number;
+  programName: TextOverlayConfig;
+  section: TextOverlayConfig;
+  prizesLayout: "stacked" | "slots";
+  stackedSettings: {
+    startX: number;
+    startY: number;
+    spacingY: number;
+    nameFontSize: number;
+    nameColor: string;
+    nameFontFamily: string;
+    teamFontSize: number;
+    teamColor: string;
+    teamFontFamily: string;
+    teamOffsetY: number;
+    showChestNo: boolean;
+    chestNoColor?: string;
+    align: "left" | "center" | "right";
+    maxWidth: number;
+  };
+  slotsSettings?: {
+    slot1: PositionSlotConfig;
+    slot2: PositionSlotConfig;
+    slot3: PositionSlotConfig;
+    nameFontSize: number;
+    nameColor: string;
+    nameFontFamily: string;
+    teamFontSize: number;
+    teamColor: string;
+    teamFontFamily: string;
+    teamOffsetY: number;
+    showChestNo: boolean;
+    align: "left" | "center" | "right";
+  };
+  footer: TextOverlayConfig & { text: string };
+  createdAt?: string;
+  updatedAt?: string;
+}
+
