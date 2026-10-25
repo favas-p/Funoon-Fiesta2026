@@ -78,7 +78,21 @@ export async function searchParticipant(
     .limit(20)
     .lean<Student[]>();
 
-  return students.map((s) => JSON.parse(JSON.stringify(s)));
+  if (!students.length) return [];
+
+  // Batch fetch teams to resolve team names efficiently
+  const teams = await TeamModel.find().lean<Team[]>();
+  const teamMap = new Map(teams.map((t) => [t.id, t]));
+
+  return students.map((s) => {
+    const studentObj = JSON.parse(JSON.stringify(s));
+    const team = teamMap.get(s.team_id);
+    return {
+      ...studentObj,
+      team_name: team?.name || s.team_id,
+      team_color: team?.color,
+    };
+  });
 }
 
 /**

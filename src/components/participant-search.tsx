@@ -15,6 +15,8 @@ interface SearchResult {
     name: string;
     chest_no: string;
     team_id: string;
+    team_name?: string;
+    team_color?: string;
 }
 
 export function ParticipantSearch() {
@@ -124,12 +126,18 @@ export function ParticipantSearch() {
                                                 {result.name}
                                             </h4>
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <Badge className="text-[10px] px-1.5 py-0 h-5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                                                <Badge className="text-[10px] px-1.5 py-0 h-5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-mono">
                                                     {result.chest_no}
                                                 </Badge>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                                    Team ID: {result.team_id}
-                                                </span>
+                                                <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                                    {result.team_color && (
+                                                        <span
+                                                            className="w-2 h-2 rounded-full inline-block shrink-0"
+                                                            style={{ backgroundColor: result.team_color }}
+                                                        />
+                                                    )}
+                                                    <span>{result.team_name || result.team_id}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

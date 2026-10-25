@@ -18,6 +18,8 @@ export interface Student {
   id: string;
   name: string;
   team_id: string;
+  team_name?: string;
+  team_color?: string;
   chest_no: string;
   roll_no?: string;
   avatar?: string;
